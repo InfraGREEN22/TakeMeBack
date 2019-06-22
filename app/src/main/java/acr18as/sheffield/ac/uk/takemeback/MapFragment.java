@@ -96,6 +96,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     public void onMapReady(GoogleMap mMap) {
         googleMap = mMap;
         googleMap.getUiSettings().setZoomControlsEnabled(true);
+
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -107,11 +108,11 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        googleMap.setMyLocationEnabled(true);
 
         // For showing a move to my location button
-        //googleMap.setMyLocationEnabled(true);
-        /*
+        googleMap.setMyLocationEnabled(true);
+
+
         // For dropping a marker at a point on the Map
         LatLng sydney = new LatLng(-34, 151);
         googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));
@@ -119,7 +120,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         // For zooming automatically to the location of the marker
         CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        */
+
     }
 
 
