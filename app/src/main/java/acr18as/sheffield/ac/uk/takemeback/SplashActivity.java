@@ -1,74 +1,52 @@
 package acr18as.sheffield.ac.uk.takemeback;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Bundle;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
-import com.google.android.material.tabs.TabLayout;
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.os.Handler;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.ViewPager;
-
-public class MainActivity extends AppCompatActivity implements MapFragment.OnFragmentInteractionListener,
-        SettingsFragment.OnFragmentInteractionListener,
-        AboutFragment.OnFragmentInteractionListener {
+public class SplashActivity extends AppCompatActivity {
 
     private String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION};
 
-    private static final String TAG = MainActivity.class.getName();
-    private PagesAdapter mFragmentAdapter;
-    private ViewPager mViewPager;
-    private TabLayout tabLayout;
-
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main_activity);
-
-        //Creating tabs
-        tabLayout = (TabLayout) findViewById(R.id.tablayout);
-        tabLayout.addTab(tabLayout.newTab().setText("Map").setIcon(R.drawable.ic_map_white_24dp));
-        tabLayout.addTab(tabLayout.newTab().setText("Settings").setIcon(R.drawable.ic_settings_white_24dp));
-        tabLayout.addTab(tabLayout.newTab().setText("About").setIcon(R.drawable.ic_info_outline_white_24dp));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+        setContentView(R.layout.activity_splash_screen);
 
         if (!arePermissionsEnabled()) {
             requestMultiplePermissions();
         }
-
-        //Apply the Adapter
-        mFragmentAdapter = new PagesAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
-        mViewPager = (ViewPager) findViewById(R.id.vpager);
-        mViewPager.setAdapter(mFragmentAdapter);
-
-        mViewPager.setOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        else {
+            new Handler().postDelayed(new Runnable() {
             @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                mViewPager.setCurrentItem(tab.getPosition());
+            public void run() {
+                Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
             }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
+        }, 2000);
+        }
 
     }
 
@@ -105,6 +83,16 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                                 .show();
                     }
                     return;
+                }
+                else {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }, 2000);
                 }
             }
             //all is good, continue flow
