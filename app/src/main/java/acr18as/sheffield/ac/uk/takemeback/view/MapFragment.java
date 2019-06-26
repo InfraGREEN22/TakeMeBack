@@ -32,6 +32,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -51,14 +52,13 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    //Grant permission code
-    private static final int ACCESS_FINE_LOCATION = 123;
-
     private FusedLocationProviderClient mFusedLocationClient;
     private Location mCurrentLocation;
+    private Location mSavedLocation;
 
     private MapView mMapView;
     private GoogleMap googleMap;
+    private Marker savedLocationMarker;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -69,6 +69,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
      */
     private Button mSaveButton;
     private Button mFindRouteButton;
+    private FloatingActionButton fabCurrentPosition;
 
     private OnFragmentInteractionListener mListener;
 
@@ -123,7 +124,40 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "Your current location has been saved!", Toast.LENGTH_SHORT).show();
+                if(mCurrentLocation != null) {
+                    try {
+                        if (savedLocationMarker != null) {
+                            savedLocationMarker.remove();
+                        }
+                        mSavedLocation = mCurrentLocation;
+                        LatLng latLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(latLng);
+                        markerOptions.title("Your Destination");
+                        //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                        savedLocationMarker = googleMap.addMarker(markerOptions);
+                        Toast.makeText(getContext(), "Your current location has been saved at Lat: " + mCurrentLocation.getLatitude()
+                                + " Long: " + mCurrentLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                    }
+                    catch (Exception e) {
+                        Toast.makeText(getContext(), "Something has gone wrong with saving...", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                }
+                else
+                    Toast.makeText(getContext(), "Something has gone wrong with saving...", Toast.LENGTH_SHORT).show();
+            }
+        });
+        fabCurrentPosition = rootView.findViewById(R.id.fab_current_position);
+        fabCurrentPosition.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mCurrentLocation != null) {
+                    LatLng current = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                    moveToCurrentLocation(current);
+                }
+                else
+                    Toast.makeText(getContext(), "Cannot detect your current location.", Toast.LENGTH_SHORT).show();
             }
         });
         return rootView;
@@ -141,7 +175,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         // For showing a move to my location button
         googleMap.setMyLocationEnabled(true);
         googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        //googleMap.getUiSettings().setZoomControlsEnabled(true);
 
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(5000);
@@ -210,5 +244,15 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    private void moveToCurrentLocation(LatLng currentLocation)
+    {
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,15));
+        // Zoom in, animating the camera.
+        googleMap.animateCamera(CameraUpdateFactory.zoomIn());
+        // Zoom out to zoom level 10, animating with a duration of 2 seconds.
+        googleMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+
     }
 }
