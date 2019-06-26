@@ -14,9 +14,12 @@ import android.os.Handler;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Splash Activity. A "welcome page".
+ */
 public class SplashActivity extends AppCompatActivity {
 
-    private String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION};
+    private String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,13 +31,6 @@ public class SplashActivity extends AppCompatActivity {
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
         else {
@@ -76,7 +72,7 @@ public class SplashActivity extends AppCompatActivity {
                 if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                     if (shouldShowRequestPermissionRationale(permissions[i])) {
                         new AlertDialog.Builder(this)
-                                .setMessage("Location permission is necessary")
+                                .setMessage(R.string.location_permission_required)
                                 .setPositiveButton("Allow", (dialog, which) -> requestMultiplePermissions())
                                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                                 .create()
@@ -95,7 +91,6 @@ public class SplashActivity extends AppCompatActivity {
                     }, 2000);
                 }
             }
-            //all is good, continue flow
         }
     }
 }

@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Take Me Back Where I Came From</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="splash_msg">Take me back where I came from</string>
+    <string name="location_permission_required">It is necessary that you grant the app a permission to track your current location.
+    It is used only for the correct app work and will not be shared to anyone.</string>
 </resources>

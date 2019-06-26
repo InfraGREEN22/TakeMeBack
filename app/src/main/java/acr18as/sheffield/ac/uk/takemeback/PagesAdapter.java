@@ -1,5 +1,8 @@
 package acr18as.sheffield.ac.uk.takemeback;
 
+import acr18as.sheffield.ac.uk.takemeback.view.AboutFragment;
+import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
+import acr18as.sheffield.ac.uk.takemeback.view.SettingsFragment;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;

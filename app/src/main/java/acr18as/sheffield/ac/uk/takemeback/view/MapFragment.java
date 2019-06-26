@@ -1,26 +1,40 @@
-package acr18as.sheffield.ac.uk.takemeback;
+package acr18as.sheffield.ac.uk.takemeback.view;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 
+import acr18as.sheffield.ac.uk.takemeback.R;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.text.DateFormat;
+import java.util.Date;
 
 
 /**
@@ -40,6 +54,9 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     //Grant permission code
     private static final int ACCESS_FINE_LOCATION = 123;
 
+    private FusedLocationProviderClient mFusedLocationClient;
+    private Location mCurrentLocation;
+
     private MapView mMapView;
     private GoogleMap googleMap;
 
@@ -47,7 +64,17 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     private String mParam1;
     private String mParam2;
 
+    /**
+     * Two main buttons of the Map fragment.
+     */
+    private Button mSaveButton;
+    private Button mFindRouteButton;
+
     private OnFragmentInteractionListener mListener;
+
+    private LocationRequest mLocationRequest;
+    //private LocationCallback mLocationCallback;
+    private String mLastUpdateTime;
 
     public MapFragment() {
         // Required empty public constructor
@@ -70,7 +97,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
     }
 
     @Override
@@ -89,39 +115,56 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             e.printStackTrace();
         }
         mMapView.getMapAsync(this);
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity().getApplicationContext());
+
+        // setting onClickListener to buttons
+        mSaveButton = rootView.findViewById(R.id.save_location_button);
+        mSaveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getContext(), "Your current location has been saved!", Toast.LENGTH_SHORT).show();
+            }
+        });
         return rootView;
     }
 
     @Override
     public void onMapReady(GoogleMap mMap) {
         googleMap = mMap;
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
 
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
 
         // For showing a move to my location button
         googleMap.setMyLocationEnabled(true);
+        googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
 
-
-        // For dropping a marker at a point on the Map
-        LatLng sydney = new LatLng(-34, 151);
-        googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));
-
-        // For zooming automatically to the location of the marker
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(5000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+        //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 14.0f));
 
     }
+
+    LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            mCurrentLocation = locationResult.getLastLocation();
+            mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+            Log.i("MAP", "new location " + mCurrentLocation.toString());
+            /*if (googleMap != null)
+                googleMap.addMarker(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
+                        .title(mLastUpdateTime));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 14.0f));*/
+        }
+    };
 
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -140,6 +183,11 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override

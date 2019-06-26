@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapFragment"
+    tools:context=".view.MapFragment"
     android:orientation="vertical">
 
     <com.google.android.gms.maps.MapView
@@ -25,11 +25,13 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/save_location_button"
             android:text="SAVE CURRENT LOCATION" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/create_route_button"
             android:text="CREATE A ROUTE BACK"/>
 
     </LinearLayout>

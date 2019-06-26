@@ -5,6 +5,9 @@ import android.os.Bundle;
 
 import com.google.android.material.tabs.TabLayout;
 
+import acr18as.sheffield.ac.uk.takemeback.view.AboutFragment;
+import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
+import acr18as.sheffield.ac.uk.takemeback.view.SettingsFragment;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
