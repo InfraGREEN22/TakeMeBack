@@ -1,13 +1,14 @@
-package acr18as.sheffield.ac.uk.takemeback;
+package acr18as.sheffield.ac.uk.takemeback.view;
 
 import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.tabs.TabLayout;
 
-import acr18as.sheffield.ac.uk.takemeback.view.AboutFragment;
-import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
-import acr18as.sheffield.ac.uk.takemeback.view.SettingsFragment;
+import acr18as.sheffield.ac.uk.takemeback.R;
+import acr18as.sheffield.ac.uk.takemeback.UserClient;
+import acr18as.sheffield.ac.uk.takemeback.adapters.PagesAdapter;
+import acr18as.sheffield.ac.uk.takemeback.model.User;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
@@ -55,6 +56,10 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
             }
         });
+
+        // Creating a new User instance
+        User user = new User();
+        ((UserClient)getApplicationContext()).setUser(user);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package acr18as.sheffield.ac.uk.takemeback;
+package acr18as.sheffield.ac.uk.takemeback.adapters;
 
 import acr18as.sheffield.ac.uk.takemeback.view.AboutFragment;
 import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;

@@ -1,5 +1,6 @@
-package acr18as.sheffield.ac.uk.takemeback;
+package acr18as.sheffield.ac.uk.takemeback.view;
 
+import acr18as.sheffield.ac.uk.takemeback.R;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;

@@ -1,13 +1,18 @@
 package acr18as.sheffield.ac.uk.takemeback.view;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 
 import acr18as.sheffield.ac.uk.takemeback.R;
+import acr18as.sheffield.ac.uk.takemeback.UserClient;
+import acr18as.sheffield.ac.uk.takemeback.model.User;
+import acr18as.sheffield.ac.uk.takemeback.services.LocationService;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -37,6 +42,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.text.DateFormat;
 import java.util.Date;
 
+import static android.content.Context.ACTIVITY_SERVICE;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -51,9 +58,19 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = "MapFragment";
 
-    private FusedLocationProviderClient mFusedLocationClient;
-    private Location mCurrentLocation;
+
+    private static Fragment fragment;
+    public static void setFragment(Fragment fragment) {
+        MapFragment.fragment = fragment;
+    }
+    public static Fragment getFragment() { return fragment; }
+    //public Location getmCurrentLocation() { return mCurrentLocation; }
+    //public void setmCurrentLocation(Location location) { this.mCurrentLocation = location; }
+
+    //private FusedLocationProviderClient mFusedLocationClient;
+    //private Location mCurrentLocation;
     private Location mSavedLocation;
 
     private MapView mMapView;
@@ -74,8 +91,9 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     private OnFragmentInteractionListener mListener;
 
     private LocationRequest mLocationRequest;
-    //private LocationCallback mLocationCallback;
     private String mLastUpdateTime;
+
+    private static User user;
 
     public MapFragment() {
         // Required empty public constructor
@@ -98,6 +116,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        setFragment(this);
+        user = ((UserClient)getActivity().getApplicationContext()).getUser();
     }
 
     @Override
@@ -117,43 +137,28 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         }
         mMapView.getMapAsync(this);
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity().getApplicationContext());
+        //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity().getApplicationContext());
 
-        // setting onClickListener to buttons
+        // setting click event for a Save Location button
         mSaveButton = rootView.findViewById(R.id.save_location_button);
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mCurrentLocation != null) {
-                    try {
-                        if (savedLocationMarker != null) {
-                            savedLocationMarker.remove();
-                        }
-                        mSavedLocation = mCurrentLocation;
-                        LatLng latLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-                        MarkerOptions markerOptions = new MarkerOptions();
-                        markerOptions.position(latLng);
-                        markerOptions.title("Your Destination");
-                        //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-                        savedLocationMarker = googleMap.addMarker(markerOptions);
-                        Toast.makeText(getContext(), "Your current location has been saved at Lat: " + mCurrentLocation.getLatitude()
-                                + " Long: " + mCurrentLocation.getLongitude(), Toast.LENGTH_SHORT).show();
-                    }
-                    catch (Exception e) {
-                        Toast.makeText(getContext(), "Something has gone wrong with saving...", Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
+                if(user.getUserLocation() != null) {
+                    saveCurrentLocation();
                 }
                 else
                     Toast.makeText(getContext(), "Something has gone wrong with saving...", Toast.LENGTH_SHORT).show();
             }
         });
+
+        // setting click event for a floating action button to move to a current location
         fabCurrentPosition = rootView.findViewById(R.id.fab_current_position);
         fabCurrentPosition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mCurrentLocation != null) {
-                    LatLng current = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                if(user.getUserLocation() != null) {
+                    LatLng current = new LatLng(user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude());
                     moveToCurrentLocation(current);
                 }
                 else
@@ -172,33 +177,13 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             return;
         }
 
-        // For showing a move to my location button
         googleMap.setMyLocationEnabled(true);
         googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         //googleMap.getUiSettings().setZoomControlsEnabled(true);
 
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(5000);
-        mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
-        //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 14.0f));
-
+        // CALL LOCATION SERVICE INTENT HERE
+        startLocationService();
     }
-
-    LocationCallback mLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            super.onLocationResult(locationResult);
-            mCurrentLocation = locationResult.getLastLocation();
-            mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-            Log.i("MAP", "new location " + mCurrentLocation.toString());
-            /*if (googleMap != null)
-                googleMap.addMarker(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
-                        .title(mLastUpdateTime));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 14.0f));*/
-        }
-    };
 
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -246,6 +231,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         void onFragmentInteraction(Uri uri);
     }
 
+    // moving a camera to the current user location
     private void moveToCurrentLocation(LatLng currentLocation)
     {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,15));
@@ -254,5 +240,61 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         // Zoom out to zoom level 10, animating with a duration of 2 seconds.
         googleMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
 
+    }
+
+    // private method for saving a final destination location
+    private void saveCurrentLocation() {
+        try {
+            if (savedLocationMarker != null) {
+                savedLocationMarker.remove();
+            }
+            mSavedLocation = user.getUserLocation();
+            LatLng latLng = new LatLng(mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.position(latLng);
+            markerOptions.title("Your Destination");
+            //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+            savedLocationMarker = googleMap.addMarker(markerOptions);
+            Toast.makeText(getContext(), "Your current location has been saved at Lat: " + mSavedLocation.getLatitude()
+                    + " Long: " + mSavedLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e) {
+            Toast.makeText(getContext(), "Something has gone wrong with saving...", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    private void hideSaveButton() {
+        mSaveButton.setVisibility(View.GONE);
+    }
+
+    private void showSaveButton() {
+        mSaveButton.setVisibility(View.VISIBLE);
+    }
+
+    private void startLocationService() {
+        if(!isLocationServiceRunning()){
+            Intent serviceIntent = new Intent(getActivity(), LocationService.class);
+//        this.startService(serviceIntent);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+
+                getActivity().startForegroundService(serviceIntent);
+            }else{
+                getActivity().startService(serviceIntent);
+            }
+        }
+    }
+
+    private boolean isLocationServiceRunning() {
+        ActivityManager manager = (ActivityManager)getActivity().getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+            if("acr18as.sheffield.ac.uk.takemeback.services.LocationService".equals(service.service.getClassName())) {
+                Log.d(TAG, "isLocationServiceRunning: location service is already running.");
+                return true;
+            }
+        }
+        Log.d(TAG, "isLocationServiceRunning: location service is not running.");
+        return false;
     }
 }
