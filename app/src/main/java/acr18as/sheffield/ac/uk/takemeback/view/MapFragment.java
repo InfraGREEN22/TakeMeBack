@@ -13,9 +13,12 @@ import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import acr18as.sheffield.ac.uk.takemeback.services.LocationService;
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,11 +27,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -37,10 +35,21 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.maps.DirectionsApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PendingResult;
+import com.google.maps.internal.PolylineEncoding;
+import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.DirectionsRoute;
+import com.google.maps.model.TravelMode;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 
@@ -60,22 +69,18 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     private static final String ARG_PARAM2 = "param2";
     private static final String TAG = "MapFragment";
 
-
     private static Fragment fragment;
     public static void setFragment(Fragment fragment) {
         MapFragment.fragment = fragment;
     }
     public static Fragment getFragment() { return fragment; }
-    //public Location getmCurrentLocation() { return mCurrentLocation; }
-    //public void setmCurrentLocation(Location location) { this.mCurrentLocation = location; }
 
-    //private FusedLocationProviderClient mFusedLocationClient;
-    //private Location mCurrentLocation;
     private Location mSavedLocation;
 
     private MapView mMapView;
     private GoogleMap googleMap;
     private Marker savedLocationMarker;
+    private GeoApiContext mGeoApiContext = null;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -89,9 +94,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     private FloatingActionButton fabCurrentPosition;
 
     private OnFragmentInteractionListener mListener;
-
-    private LocationRequest mLocationRequest;
-    private String mLastUpdateTime;
 
     private static User user;
 
@@ -121,23 +123,11 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
-
-        mMapView = (MapView) rootView.findViewById(R.id.main_map);
-        mMapView.onCreate(savedInstanceState);
-
-        mMapView.onResume();
-        try {
-            MapsInitializer.initialize(getActivity().getApplicationContext());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        mMapView.getMapAsync(this);
-
-        //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity().getApplicationContext());
+        initGoogleMap(savedInstanceState, rootView);
 
         // setting click event for a Save Location button
         mSaveButton = rootView.findViewById(R.id.save_location_button);
@@ -149,6 +139,15 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                 }
                 else
                     Toast.makeText(getContext(), "Something has gone wrong with saving...", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // setting click event for a Find A Route button
+        mFindRouteButton = rootView.findViewById(R.id.create_route_button);
+        mFindRouteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                calculateDirections();
             }
         });
 
@@ -181,7 +180,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         //googleMap.getUiSettings().setZoomControlsEnabled(true);
 
-        // CALL LOCATION SERVICE INTENT HERE
         startLocationService();
     }
 
@@ -231,7 +229,10 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         void onFragmentInteraction(Uri uri);
     }
 
-    // moving a camera to the current user location
+    /**
+     * moving a camera to the current user location
+     * @param currentLocation
+     */
     private void moveToCurrentLocation(LatLng currentLocation)
     {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,15));
@@ -242,13 +243,16 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
 
     }
 
-    // private method for saving a final destination location
+    /**
+     * Private method for saving a final destination location
+     */
     private void saveCurrentLocation() {
         try {
             if (savedLocationMarker != null) {
                 savedLocationMarker.remove();
             }
-            mSavedLocation = user.getUserLocation();
+            user.getDestination().setDestinationPoint(user.getUserLocation());
+            mSavedLocation = new Location(user.getDestination().getDestinationPoint());
             LatLng latLng = new LatLng(mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.position(latLng);
@@ -272,10 +276,12 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         mSaveButton.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Start updating the current user location
+     */
     private void startLocationService() {
         if(!isLocationServiceRunning()){
             Intent serviceIntent = new Intent(getActivity(), LocationService.class);
-//        this.startService(serviceIntent);
 
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
 
@@ -286,6 +292,9 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         }
     }
 
+    /**
+     * Check if the LocationService is already running
+     */
     private boolean isLocationServiceRunning() {
         ActivityManager manager = (ActivityManager)getActivity().getSystemService(ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
@@ -296,5 +305,126 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         }
         Log.d(TAG, "isLocationServiceRunning: location service is not running.");
         return false;
+    }
+
+    private void initGoogleMap(Bundle savedInstanceState, View rootView) {
+        mMapView = (MapView) rootView.findViewById(R.id.main_map);
+        mMapView.onCreate(savedInstanceState);
+
+        mMapView.onResume();
+        try {
+            MapsInitializer.initialize(getActivity().getApplicationContext());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        mMapView.getMapAsync(this);
+
+        // instantiating GoogleApiContext object which is used for calculating directions
+        if(mGeoApiContext == null) {
+            mGeoApiContext = new GeoApiContext.Builder().apiKey(getString(R.string.google_maps_key)).build();
+        }
+    }
+
+    /**
+     * Method for calculating directions from the user's current location to the destination point
+     * @param
+     */
+    private void calculateDirections(){
+        Log.d(TAG, "calculateDirections: calculating directions.");
+
+        setTestDestinationPoint();
+
+        if(user.getDestination().getDestinationPoint() == null || user.getUserLocation() == null) {
+            Toast.makeText(getContext(), "Unable to build a route back", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
+                user.getDestination().getDestinationPoint().getLatitude(),
+                user.getDestination().getDestinationPoint().getLongitude()
+        );
+        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
+
+        // at this point, we want the most optimal route, so we ask for NO alternative routes
+        directions.alternatives(false);
+        // set the mode of directions to WALKING
+        directions.mode(TravelMode.WALKING);
+        directions.origin(
+                new com.google.maps.model.LatLng(
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude()
+                )
+        );
+        Log.d(TAG, "calculateDirections: destination: " + destination.toString());
+        directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
+            @Override
+            public void onResult(DirectionsResult result) {
+                Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
+                Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
+                Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
+                Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
+                addPolylinesToMap(result);
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+                Log.e(TAG, "calculateDirections: Failed to get directions: " + e.getMessage() );
+
+            }
+        });
+    }
+
+    /**
+     * Method for drawing polylines on the map representing the route from the current user's location
+     * to the final destination point
+     * @param result
+     */
+    private void addPolylinesToMap(final DirectionsResult result){
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "run: result routes: " + result.routes.length);
+
+                for(DirectionsRoute route: result.routes){
+                    Log.d(TAG, "run: leg: " + route.legs[0].toString());
+                    List<com.google.maps.model.LatLng> decodedPath = PolylineEncoding.decode(route.overviewPolyline.getEncodedPath());
+
+                    List<LatLng> newDecodedPath = new ArrayList<>();
+
+                    // This loops through all the LatLng coordinates of ONE polyline.
+                    for(com.google.maps.model.LatLng latLng: decodedPath){
+
+//                        Log.d(TAG, "run: latlng: " + latLng.toString());
+
+                        newDecodedPath.add(new LatLng(
+                                latLng.lat,
+                                latLng.lng
+                        ));
+                    }
+                    Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(newDecodedPath));
+                    polyline.setColor(ContextCompat.getColor(getActivity(), R.color.darkGrey));
+                    polyline.setClickable(true);
+
+                }
+            }
+        });
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // FOR TESTING PURPOSES ONLY!!!!
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private void setTestDestinationPoint() {
+        // to prevent NullPointerException initially set the destination location as a user's current location
+        user.getDestination().setDestinationPoint(user.getUserLocation());
+        mSavedLocation = new Location(user.getDestination().getDestinationPoint());
+        //setting a point in front of the Regent Court
+        mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
+        user.getDestination().setDestinationPoint(mSavedLocation);
+        LatLng latLng = new LatLng(mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.title("Your Destination");
+        //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+        savedLocationMarker = googleMap.addMarker(markerOptions);
     }
 }

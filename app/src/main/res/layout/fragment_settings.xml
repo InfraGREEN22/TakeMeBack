@@ -14,8 +14,34 @@
     <Switch
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/activity_recognition_mode"
         android:text="Enable/Disable Automatic Mode"
         android:gravity="left"
         android:layout_below="@id/settings_title"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/directions_text"
+        android:text="Directions mode"
+        android:textSize="30dp"
+        android:layout_below="@+id/activity_recognition_mode"/>
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/directions_mode_radio_group"
+        android:layout_below="@id/directions_text">
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/walking_radio_button"
+            android:text="Walking"/>
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/driving_radio_button"
+            android:text="Driving"/>
+    </RadioGroup>
 
 </RelativeLayout>
