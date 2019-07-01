@@ -147,7 +147,9 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         mFindRouteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                calculateDirections();
+                //calculateDirections();
+                Intent intent = new Intent(getActivity(), RouteActivity.class);
+                startActivity(intent);
             }
         });
 

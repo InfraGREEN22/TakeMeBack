@@ -51,12 +51,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/save_location_button"
+            android:layout_weight="1"
             android:text="SAVE CURRENT LOCATION" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/create_route_button"
+            android:layout_weight="3"
             android:text="CREATE A ROUTE BACK"/>
 
     </LinearLayout>
