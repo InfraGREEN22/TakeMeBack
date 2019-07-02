@@ -327,6 +327,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         }
     }
 
+    // TODO: Remove all the methods below from this fragment
     /**
      * Method for calculating directions from the user's current location to the destination point
      * @param

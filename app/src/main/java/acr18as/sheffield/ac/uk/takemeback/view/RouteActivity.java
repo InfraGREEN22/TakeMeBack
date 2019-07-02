@@ -8,8 +8,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -84,7 +88,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         navigateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                openGoogleMaps();
             }
         });
     }
@@ -103,17 +107,17 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         zoomToTheRoute();
     }
 
-    // setting the start and end markers on the map
+    // TODO: Remove the mock destination point and make an event handler where route building query
+    // TODO: is rejected if there is no destination point (possibly, make it in the MapFragment)
+
+    /**
+     * Setting the start and end markers on the map
+     */
     private void setMarkers() {
         LatLng startLatLng = new LatLng(start.getLatitude(), start.getLongitude());
 
-        // to prevent NullPointerException initially set the destination location as a user's current location
-        user.getDestination().setDestinationPoint(user.getUserLocation());
-        Location mSavedLocation = new Location(user.getDestination().getDestinationPoint());
-        //setting a point in front of the Regent Court
-        mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
-        user.getDestination().setDestinationPoint(mSavedLocation);
-        end = user.getDestination().getDestinationPoint();
+        // TODO: Remove the method call below when the end point saving is done
+        setTestDestinationPoint();
 
         LatLng endLatLng = new LatLng(end.getLatitude(), end.getLongitude());
         //LatLng endLatLng = new LatLng(53.380884, -1.480858);
@@ -127,7 +131,9 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         startMarker = googleMap.addMarker(markerOptions);
     }
 
-    // move a camera to the area where the route has been built
+    /**
+     * Move a camera to the area where the route has been built
+     */
     private void zoomToTheRoute() {
         LatLng location = new LatLng(start.getLatitude(), start.getLongitude());
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location,15));
@@ -143,8 +149,6 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
      */
     private void calculateDirections(){
         Log.d(TAG, "calculateDirections: calculating directions.");
-
-        //setTestDestinationPoint();
 
         if(user.getDestination().getDestinationPoint() == null || user.getUserLocation() == null) {
             Toast.makeText(this, "Unable to build a route back", Toast.LENGTH_SHORT).show();
@@ -221,6 +225,10 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         });
     }
 
+    /**
+     * Initialisation of MapView
+     * @param savedInstanceState
+     */
     private void initGoogleMap(Bundle savedInstanceState) {
         mMapView = (MapView) findViewById(R.id.route_map);
         mMapView.onCreate(savedInstanceState);
@@ -237,5 +245,65 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         if(mGeoApiContext == null) {
             mGeoApiContext = new GeoApiContext.Builder().apiKey(getString(R.string.google_maps_key)).build();
         }
+    }
+
+    /**
+     * Getter for the instance of current Activity
+     * @return
+     */
+    private AppCompatActivity getActivity() {
+        return this;
+    }
+
+    /**
+     * Method for opening Google Maps and
+     */
+    private void openGoogleMaps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("Start navigating to the destination point?")
+                .setCancelable(true)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        String latitude = String.valueOf(endMarker.getPosition().latitude);
+                        String longitude = String.valueOf(endMarker.getPosition().longitude);
+
+                        // at this stage, we provide ONLY walking route
+                        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=w");
+
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                        mapIntent.setPackage("com.google.android.apps.maps");
+
+                        try{
+                            if (mapIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                                startActivity(mapIntent);
+                            }
+                        }catch (NullPointerException e){
+                            Log.e(TAG, "onClick: NullPointerException: Couldn't open map." + e.getMessage() );
+                            Toast.makeText(getActivity(), "Couldn't open map", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    /////////////////////////////////////////////////////////////
+    // The below method is for TESTING PURPOSES ONLY!!!!!
+    /////////////////////////////////////////////////////////////
+
+    private void setTestDestinationPoint() {
+        // to prevent NullPointerException initially set the destination location as a user's current location
+        user.getDestination().setDestinationPoint(user.getUserLocation());
+        Location mSavedLocation = new Location(user.getDestination().getDestinationPoint());
+        //setting a point in front of the Regent Court
+        mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
+        user.getDestination().setDestinationPoint(mSavedLocation);
+        end = user.getDestination().getDestinationPoint();
     }
 }
