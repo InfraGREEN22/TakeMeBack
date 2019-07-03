@@ -4,6 +4,9 @@ import android.app.Application;
 
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 
+/**
+ * A singleton User object
+ */
 public class UserClient extends Application {
 
     private User user = null;

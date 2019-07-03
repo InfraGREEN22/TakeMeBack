@@ -218,7 +218,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
                         ));
                     }
                     Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(newDecodedPath));
-                    polyline.setColor(ContextCompat.getColor(getApplicationContext(), R.color.darkGrey));
+                    polyline.setColor(ContextCompat.getColor(getApplicationContext(), R.color.Red));
                     polyline.setClickable(true);
                 }
             }

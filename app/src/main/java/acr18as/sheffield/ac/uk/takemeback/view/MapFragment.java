@@ -2,7 +2,9 @@ package acr18as.sheffield.ac.uk.takemeback.view;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -92,6 +94,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     private Button mSaveButton;
     private Button mFindRouteButton;
     private FloatingActionButton fabCurrentPosition;
+    private FloatingActionButton fabDeleteDestination;
 
     private OnFragmentInteractionListener mListener;
 
@@ -175,6 +178,18 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             }
         });
 
+        // setting click event for a Delete Destination button
+        fabDeleteDestination = rootView.findViewById(R.id.fab_delete_destination);
+        fabDeleteDestination.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(user.getDestination().getDestinationPoint() != null)
+                    requestDestinationDelete();
+                else
+                    Toast.makeText(getContext(), "There is no destination point to delete!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // setting click event for a floating action button to move to a current location
         fabCurrentPosition = rootView.findViewById(R.id.fab_current_position);
         fabCurrentPosition.setOnClickListener(new View.OnClickListener() {
@@ -202,7 +217,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
 
         googleMap.setMyLocationEnabled(true);
         googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-        //googleMap.getUiSettings().setZoomControlsEnabled(true);
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
 
         startLocationService();
     }
@@ -253,6 +268,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         void onFragmentInteraction(Uri uri);
     }
 
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * moving a camera to the current user location
      * @param currentLocation
@@ -349,110 +366,44 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         }
     }
 
-    // TODO: Remove all the methods below from this fragment
     /**
-     * Method for calculating directions from the user's current location to the destination point
-     * @param
+     * Asking a user to delete the destination point and removing a marker from the map
      */
-    private void calculateDirections(){
-        Log.d(TAG, "calculateDirections: calculating directions.");
-
-        setTestDestinationPoint();
-
-        if(user.getDestination().getDestinationPoint() == null || user.getUserLocation() == null) {
-            Toast.makeText(getContext(), "Unable to build a route back", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
-                user.getDestination().getDestinationPoint().getLatitude(),
-                user.getDestination().getDestinationPoint().getLongitude()
-        );
-        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
-
-        // at this point, we want the most optimal route, so we ask for NO alternative routes
-        directions.alternatives(false);
-        // set the mode of directions to WALKING
-        directions.mode(TravelMode.WALKING);
-        directions.origin(
-                new com.google.maps.model.LatLng(
-                        user.getUserLocation().getLatitude(),
-                        user.getUserLocation().getLongitude()
-                )
-        );
-        Log.d(TAG, "calculateDirections: destination: " + destination.toString());
-        directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
-            @Override
-            public void onResult(DirectionsResult result) {
-                Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
-                Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
-                Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
-                Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
-                addPolylinesToMap(result);
-            }
-
-            @Override
-            public void onFailure(Throwable e) {
-                Log.e(TAG, "calculateDirections: Failed to get directions: " + e.getMessage() );
-
-            }
-        });
-    }
-
-    /**
-     * Method for drawing polylines on the map representing the route from the current user's location
-     * to the final destination point
-     * @param result
-     */
-    private void addPolylinesToMap(final DirectionsResult result){
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "run: result routes: " + result.routes.length);
-
-                for(DirectionsRoute route: result.routes){
-                    Log.d(TAG, "run: leg: " + route.legs[0].toString());
-                    List<com.google.maps.model.LatLng> decodedPath = PolylineEncoding.decode(route.overviewPolyline.getEncodedPath());
-
-                    List<LatLng> newDecodedPath = new ArrayList<>();
-
-                    // This loops through all the LatLng coordinates of ONE polyline.
-                    for(com.google.maps.model.LatLng latLng: decodedPath){
-
-//                        Log.d(TAG, "run: latlng: " + latLng.toString());
-
-                        newDecodedPath.add(new LatLng(
-                                latLng.lat,
-                                latLng.lng
-                        ));
+    private void requestDestinationDelete() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("Delete the saved destination point?")
+                .setCancelable(true)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        if(savedLocationMarker != null) {
+                            try {
+                                savedLocationMarker.remove();
+                                user.getDestination().setDestinationPoint(null);
+                                Toast.makeText(getContext(), "The destination point has been successfully deleted!", Toast.LENGTH_SHORT).show();
+                            }
+                            catch (Exception e) {
+                                Toast.makeText(getContext(), "Error", Toast.LENGTH_SHORT).show();
+                                e.printStackTrace();
+                            }
+                        }
                     }
-                    Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(newDecodedPath));
-                    polyline.setColor(ContextCompat.getColor(getActivity(), R.color.darkGrey));
-                    polyline.setClickable(true);
-
-                }
-            }
-        });
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // FOR TESTING PURPOSES ONLY!!!!
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   /* private void setTestDestinationPoint() {
-        // to prevent NullPointerException initially set the destination location as a user's current location
-        user.getDestination().setDestinationPoint(user.getUserLocation());
-        mSavedLocation = new Location(user.getDestination().getDestinationPoint());
-        //setting a point in front of the Regent Court
-        mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
-        user.getDestination().setDestinationPoint(mSavedLocation);
-        LatLng latLng = new LatLng(mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.title("Your Destination");
-        //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-        savedLocationMarker = googleMap.addMarker(markerOptions);
-    }*/
 
+    /**
+     * Sets the destination point opposite to Regent Court in Sheffield
+     */
     private void setTestDestinationPoint() {
         // to prevent NullPointerException initially set the destination location as a user's current location
         user.getDestination().setDestinationPoint(user.getUserLocation());
