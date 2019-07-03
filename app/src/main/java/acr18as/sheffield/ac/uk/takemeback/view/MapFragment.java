@@ -95,6 +95,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
 
     private OnFragmentInteractionListener mListener;
 
+    // TODO: Soon replace it with UserViewModel
     private static User user;
 
     public MapFragment() {
@@ -125,9 +126,24 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
         initGoogleMap(savedInstanceState, rootView);
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // TODO: Delete this button after testing is done!!!
+
+        FloatingActionButton mTestingFloatingActionButton = rootView.findViewById(R.id.fab_testing);
+        mTestingFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setTestDestinationPoint();
+                Intent intent = new Intent(getActivity(), RouteActivity.class);
+                startActivity(intent);
+            }
+        });
+        //////////////////////////////////////////////////////////////////////////////////////////////
 
         // setting click event for a Save Location button
         mSaveButton = rootView.findViewById(R.id.save_location_button);
@@ -138,7 +154,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                     saveCurrentLocation();
                 }
                 else
-                    Toast.makeText(getContext(), "Something has gone wrong with saving...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Something has gone wrong with saving... Cannot detect " +
+                            "your current location.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -147,9 +164,14 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         mFindRouteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //calculateDirections();
-                Intent intent = new Intent(getActivity(), RouteActivity.class);
-                startActivity(intent);
+                if(user.getDestination().getDestinationPoint() == null) {
+                    Toast.makeText(getContext(), "Cannot calculate a route because there is no destination" +
+                            " point.", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Intent intent = new Intent(getActivity(), RouteActivity.class);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -416,7 +438,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // FOR TESTING PURPOSES ONLY!!!!
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    private void setTestDestinationPoint() {
+   /* private void setTestDestinationPoint() {
         // to prevent NullPointerException initially set the destination location as a user's current location
         user.getDestination().setDestinationPoint(user.getUserLocation());
         mSavedLocation = new Location(user.getDestination().getDestinationPoint());
@@ -429,5 +451,14 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         markerOptions.title("Your Destination");
         //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
         savedLocationMarker = googleMap.addMarker(markerOptions);
+    }*/
+
+    private void setTestDestinationPoint() {
+        // to prevent NullPointerException initially set the destination location as a user's current location
+        user.getDestination().setDestinationPoint(user.getUserLocation());
+        Location mSavedLocation = new Location(user.getDestination().getDestinationPoint());
+        //setting a point in front of the Regent Court
+        mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
+        user.getDestination().setDestinationPoint(mSavedLocation);
     }
 }

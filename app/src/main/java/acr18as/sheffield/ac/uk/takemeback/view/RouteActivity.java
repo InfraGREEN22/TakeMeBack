@@ -117,7 +117,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         LatLng startLatLng = new LatLng(start.getLatitude(), start.getLongitude());
 
         // TODO: Remove the method call below when the end point saving is done
-        setTestDestinationPoint();
+        //setTestDestinationPoint();
 
         LatLng endLatLng = new LatLng(end.getLatitude(), end.getLongitude());
         //LatLng endLatLng = new LatLng(53.380884, -1.480858);
@@ -256,7 +256,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     }
 
     /**
-     * Method for opening Google Maps and
+     * Method for opening Google Maps and giving directions
      */
     private void openGoogleMaps() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());

@@ -14,7 +14,11 @@
         <com.google.android.gms.maps.MapView
             android:id="@+id/main_map"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="0dp" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_current_position"
@@ -26,6 +30,15 @@
             android:layout_marginBottom="22dp"
             android:src="@drawable/ic_my_location_white_24dp"
             android:backgroundTint="@color/colorPrimary"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_testing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="321dp"
+            android:layout_marginTop="33dp" />
     </RelativeLayout>
 
 
