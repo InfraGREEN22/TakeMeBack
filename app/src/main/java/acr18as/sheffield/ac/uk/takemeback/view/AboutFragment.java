@@ -32,6 +32,12 @@ public class AboutFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
+    private static Fragment fragment;
+    public static void setFragment(Fragment fragment) {
+        AboutFragment.fragment = fragment;
+    }
+    public static Fragment getFragment() { return fragment; }
+
     public AboutFragment() {
         // Required empty public constructor
     }

@@ -29,6 +29,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -78,6 +83,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     public static Fragment getFragment() { return fragment; }
 
     private Location mSavedLocation;
+    private FusedLocationProviderClient mFusedLocationClient;
 
     private MapView mMapView;
     private GoogleMap googleMap;
@@ -124,6 +130,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         }
         setFragment(this);
         user = ((UserClient)getActivity().getApplicationContext()).getUser();
+        Log.d(TAG, "Fragment has been created.");
     }
 
     @Override
@@ -132,6 +139,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
 
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
+        Log.d(TAG, "View has been created.");
         initGoogleMap(savedInstanceState, rootView);
 
         //////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,6 +227,10 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
 
+        // getting the device location for the first time and moving camera to that location
+        getInitialDeviceLocation();
+
+        // starting the LocationService
         startLocationService();
     }
 
@@ -285,6 +297,41 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     }
 
     /**
+     * Method called only once when the Fragment is created; retrieves the device's current location
+     * and moving a camera to that point. Location updates are removed on successful location obtaining.
+     */
+    private void getInitialDeviceLocation() {
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        LocationRequest mLocationRequestHighAccuracy = new LocationRequest();
+        mLocationRequestHighAccuracy.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequestHighAccuracy.setInterval(1000);
+        mLocationRequestHighAccuracy.setFastestInterval(1000);
+
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        mFusedLocationClient.requestLocationUpdates(mLocationRequestHighAccuracy, new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+
+                Log.d(TAG, "onLocationResult: got location result.");
+
+                Location location = locationResult.getLastLocation();
+
+                if (location != null) {
+                    super.onLocationResult(locationResult);
+                    LatLng device = new LatLng(location.getLatitude(), location.getLongitude());
+                    moveToCurrentLocation(device);
+                    mFusedLocationClient.removeLocationUpdates(this);
+                    Log.d(TAG, "initialLocationRequest: location updates stopped");
+                }
+            }
+        }, Looper.myLooper());
+    }
+
+    /**
      * Private method for saving a final destination location
      */
     private void saveCurrentLocation() {
@@ -309,12 +356,27 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         }
     }
 
+    /**
+     * Method for hiding "Save Current Location" button
+     */
     private void hideSaveButton() {
         mSaveButton.setVisibility(View.GONE);
     }
 
+    /**
+     * Method for showing "Save Current Location" button
+     */
     private void showSaveButton() {
         mSaveButton.setVisibility(View.VISIBLE);
+    }
+
+    private boolean getCurrentLocation() {
+        LocationRequest mLocationRequestHighAccuracy = new LocationRequest();
+        mLocationRequestHighAccuracy.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequestHighAccuracy.setInterval(1000);
+        mLocationRequestHighAccuracy.setFastestInterval(1000);
+
+        return true;
     }
 
     /**
@@ -325,7 +387,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             Intent serviceIntent = new Intent(getActivity(), LocationService.class);
 
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
-
                 getActivity().startForegroundService(serviceIntent);
             }else{
                 getActivity().startService(serviceIntent);
@@ -348,6 +409,11 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         return false;
     }
 
+    /**
+     * Initialising Google Maps for a MapView
+     * @param savedInstanceState
+     * @param rootView
+     */
     private void initGoogleMap(Bundle savedInstanceState, View rootView) {
         mMapView = (MapView) rootView.findViewById(R.id.main_map);
         mMapView.onCreate(savedInstanceState);
@@ -380,9 +446,11 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                                 savedLocationMarker.remove();
                                 user.getDestination().setDestinationPoint(null);
                                 Toast.makeText(getContext(), "The destination point has been successfully deleted!", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "Deleted the saved location marker and position");
                             }
                             catch (Exception e) {
                                 Toast.makeText(getContext(), "Error", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "Saved location delete error: " + e.getMessage());
                                 e.printStackTrace();
                             }
                         }
@@ -411,5 +479,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         //setting a point in front of the Regent Court
         mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
         user.getDestination().setDestinationPoint(mSavedLocation);
+        Log.d(TAG, "setTestDestinationPoint: the mock destination has been set to 53.380884, -1.480858.");
     }
 }

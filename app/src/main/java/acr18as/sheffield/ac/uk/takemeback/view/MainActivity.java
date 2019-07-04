@@ -1,5 +1,6 @@
 package acr18as.sheffield.ac.uk.takemeback.view;
 
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -11,13 +12,14 @@ import acr18as.sheffield.ac.uk.takemeback.adapters.PagesAdapter;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
 
 public class MainActivity extends AppCompatActivity implements MapFragment.OnFragmentInteractionListener,
         SettingsFragment.OnFragmentInteractionListener,
         AboutFragment.OnFragmentInteractionListener {
 
-    private static final String TAG = MainActivity.class.getName();
+    private static final String TAG = "MainActivity";
     private PagesAdapter mFragmentAdapter;
     private ViewPager mViewPager;
     private TabLayout tabLayout;
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         tabLayout.addTab(tabLayout.newTab().setText("Map").setIcon(R.drawable.ic_map_white_24dp));
         tabLayout.addTab(tabLayout.newTab().setText("Settings").setIcon(R.drawable.ic_settings_white_24dp));
         tabLayout.addTab(tabLayout.newTab().setText("About").setIcon(R.drawable.ic_info_outline_white_24dp));
+        tabLayout.getTabAt(0).getIcon().setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.White), PorterDuff.Mode.SRC_IN);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         //Apply the Adapter
@@ -39,16 +42,19 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         mViewPager = (ViewPager) findViewById(R.id.vpager);
         mViewPager.setAdapter(mFragmentAdapter);
 
-        mViewPager.setOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 mViewPager.setCurrentItem(tab.getPosition());
+                int tabIconColor = ContextCompat.getColor(getApplicationContext(), R.color.White);
+                tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
             }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-
+                int tabIconColor = ContextCompat.getColor(getApplicationContext(), R.color.Black);
+                tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
             }
 
             @Override
@@ -57,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
             }
         });
 
-        // Creating a new User instance
+        // Creating a new User instance and setting the value to the Singleton object
         User user = new User();
         ((UserClient)getApplicationContext()).setUser(user);
     }

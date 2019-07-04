@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioButton;
 
 
 /**
@@ -31,6 +32,15 @@ public class SettingsFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    private RadioButton radioWalkingMode;
+    private RadioButton radioDrivingMode;
+
+    private static Fragment fragment;
+    public static void setFragment(Fragment fragment) {
+        SettingsFragment.fragment = fragment;
+    }
+    public static Fragment getFragment() { return fragment; }
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -60,6 +70,9 @@ public class SettingsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_settings, container, false);
+        radioWalkingMode = rootView.findViewById(R.id.walking_radio_button);
+        radioDrivingMode = rootView.findViewById(R.id.driving_radio_button);
+        radioWalkingMode.setChecked(true);
         return rootView;
     }
 
