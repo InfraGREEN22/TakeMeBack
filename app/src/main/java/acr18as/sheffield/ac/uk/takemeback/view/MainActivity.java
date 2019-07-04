@@ -37,9 +37,11 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         tabLayout.getTabAt(0).getIcon().setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.White), PorterDuff.Mode.SRC_IN);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
+
         //Apply the Adapter
         mFragmentAdapter = new PagesAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
         mViewPager = (ViewPager) findViewById(R.id.vpager);
+        mViewPager.setOffscreenPageLimit(3);
         mViewPager.setAdapter(mFragmentAdapter);
 
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
