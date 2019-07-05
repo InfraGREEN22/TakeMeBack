@@ -163,8 +163,10 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
 
         // at this point, we want the most optimal route, so we ask for NO alternative routes
         directions.alternatives(false);
-        // set the mode of directions to WALKING
-        directions.mode(TravelMode.WALKING);
+        if(SettingsFragment.DIRECTIONS_MODE == 0)
+            directions.mode(TravelMode.WALKING);
+        else
+            directions.mode(TravelMode.DRIVING);
         directions.origin(
                 new com.google.maps.model.LatLng(
                         user.getUserLocation().getLatitude(),
@@ -267,8 +269,11 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
                         String latitude = String.valueOf(endMarker.getPosition().latitude);
                         String longitude = String.valueOf(endMarker.getPosition().longitude);
 
-                        // at this stage, we provide ONLY walking route
-                        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=w");
+                        Uri gmmIntentUri = null;
+                        if(SettingsFragment.DIRECTIONS_MODE == 0)
+                            gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=w");
+                        else
+                            gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=d");
 
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                         mapIntent.setPackage("com.google.android.apps.maps");

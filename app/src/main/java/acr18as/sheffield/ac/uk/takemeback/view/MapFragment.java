@@ -382,15 +382,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         mSaveButton.setEnabled(true);
     }
 
-    private boolean getCurrentLocation() {
-        LocationRequest mLocationRequestHighAccuracy = new LocationRequest();
-        mLocationRequestHighAccuracy.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequestHighAccuracy.setInterval(1000);
-        mLocationRequestHighAccuracy.setFastestInterval(1000);
-
-        return true;
-    }
-
     /**
      * Start updating the current user location
      */

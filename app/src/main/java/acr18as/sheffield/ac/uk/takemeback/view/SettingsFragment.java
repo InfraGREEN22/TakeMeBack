@@ -99,8 +99,10 @@ public class SettingsFragment extends Fragment {
                 switch (selectedText) {
                     case "Walking":
                         DIRECTIONS_MODE = 0;
+                        break;
                     case "Driving":
                         DIRECTIONS_MODE = 1;
+                        break;
                 }
             }
         });
