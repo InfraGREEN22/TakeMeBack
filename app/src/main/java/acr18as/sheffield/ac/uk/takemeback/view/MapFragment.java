@@ -214,6 +214,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         return rootView;
     }
 
+
+
     @Override
     public void onMapReady(GoogleMap mMap) {
         googleMap = mMap;
@@ -256,6 +258,12 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     @Override
     public void onResume() {
         super.onResume();
+        if (SettingsFragment.AUTOMODE == 1) {
+            hideSaveButton();
+        }
+        else {
+            showSaveButton();
+        }
     }
 
     @Override
@@ -360,14 +368,18 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
      * Method for hiding "Save Current Location" button
      */
     private void hideSaveButton() {
-        mSaveButton.setVisibility(View.GONE);
+        //mSaveButton.setVisibility(View.GONE);
+        //TODO: Find a way to show it without being warped
+        mSaveButton.setEnabled(false);
     }
 
     /**
      * Method for showing "Save Current Location" button
      */
     private void showSaveButton() {
-        mSaveButton.setVisibility(View.VISIBLE);
+        //mSaveButton.setVisibility(View.VISIBLE);
+        //TODO: Find a way to show it without being warped
+        mSaveButton.setEnabled(true);
     }
 
     private boolean getCurrentLocation() {

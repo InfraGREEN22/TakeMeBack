@@ -7,10 +7,14 @@ import android.os.Bundle;
 import acr18as.sheffield.ac.uk.takemeback.R;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Switch;
 
 
 /**
@@ -33,9 +37,16 @@ public class SettingsFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+    private static String TAG = "SettingsFragment";
+
+    // Status of the automatic mode and directions mode;
+    public static int AUTOMODE = 0;
+    public static int DIRECTIONS_MODE = 0;
 
     private RadioButton radioWalkingMode;
     private RadioButton radioDrivingMode;
+    private RadioGroup radioGroup;
+    private Switch modeSwitch;
 
     private static Fragment fragment;
     public static void setFragment(Fragment fragment) {
@@ -64,6 +75,8 @@ public class SettingsFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        setFragment(this);
+        Log.d(TAG, "Fragment has been created.");
     }
 
     @Override
@@ -73,7 +86,37 @@ public class SettingsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_settings, container, false);
         radioWalkingMode = rootView.findViewById(R.id.walking_radio_button);
         radioDrivingMode = rootView.findViewById(R.id.driving_radio_button);
+        radioGroup = rootView.findViewById(R.id.directions_mode_radio_group);
         radioWalkingMode.setChecked(true);
+        modeSwitch = rootView.findViewById(R.id.activity_recognition_mode_switch);
+
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                int radioButtonID = radioGroup.getCheckedRadioButtonId();
+                RadioButton radioButton = (RadioButton) radioGroup.findViewById(radioButtonID);
+                String selectedText = (String) radioButton.getText();
+                switch (selectedText) {
+                    case "Walking":
+                        DIRECTIONS_MODE = 0;
+                    case "Driving":
+                        DIRECTIONS_MODE = 1;
+                }
+            }
+        });
+
+        modeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    AUTOMODE = 1;
+                }
+                else {
+                    AUTOMODE = 0;
+                }
+            }
+        });
+
         return rootView;
     }
 

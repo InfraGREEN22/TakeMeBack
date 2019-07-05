@@ -3,16 +3,19 @@ package acr18as.sheffield.ac.uk.takemeback.view;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.material.tabs.TabLayout;
 
 import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
-import acr18as.sheffield.ac.uk.takemeback.adapters.PagesAdapter;
+import acr18as.sheffield.ac.uk.takemeback.adapters.PagerAdapter;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 public class MainActivity extends AppCompatActivity implements MapFragment.OnFragmentInteractionListener,
@@ -20,7 +23,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         AboutFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "MainActivity";
-    private PagesAdapter mFragmentAdapter;
+    private PagerAdapter mFragmentAdapter;
     private ViewPager mViewPager;
     private TabLayout tabLayout;
 
@@ -39,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
 
         //Apply the Adapter
-        mFragmentAdapter = new PagesAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
+        mFragmentAdapter = new PagerAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
         mViewPager = (ViewPager) findViewById(R.id.vpager);
         mViewPager.setOffscreenPageLimit(3);
         mViewPager.setAdapter(mFragmentAdapter);
@@ -51,6 +54,11 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                 mViewPager.setCurrentItem(tab.getPosition());
                 int tabIconColor = ContextCompat.getColor(getApplicationContext(), R.color.White);
                 tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+
+                // refreshing the MapFragment to apply changes made in SettingsFragment
+                if(tab.getPosition() == 0) {
+                    MapFragment.getFragment().onResume();
+                }
             }
 
             @Override

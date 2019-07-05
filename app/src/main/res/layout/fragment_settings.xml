@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:tag="SettingsFragment"
     tools:context=".view.SettingsFragment">
     <TextView
         android:layout_width="match_parent"
@@ -14,7 +15,7 @@
     <Switch
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/activity_recognition_mode"
+        android:id="@+id/activity_recognition_mode_switch"
         android:text="Disable/Enable Automatic Mode"
         android:gravity="left"
         android:layout_below="@id/settings_title"/>
@@ -25,7 +26,7 @@
         android:id="@+id/directions_text"
         android:text="Directions mode"
         android:textSize="30dp"
-        android:layout_below="@+id/activity_recognition_mode"/>
+        android:layout_below="@+id/activity_recognition_mode_switch"/>
 
     <RadioGroup
         android:layout_width="match_parent"

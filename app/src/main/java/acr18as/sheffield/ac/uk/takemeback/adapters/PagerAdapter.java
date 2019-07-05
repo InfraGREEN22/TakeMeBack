@@ -1,5 +1,10 @@
 package acr18as.sheffield.ac.uk.takemeback.adapters;
 
+import android.view.ViewGroup;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import acr18as.sheffield.ac.uk.takemeback.view.AboutFragment;
 import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
 import acr18as.sheffield.ac.uk.takemeback.view.SettingsFragment;
@@ -8,11 +13,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
-public class PagesAdapter extends FragmentStatePagerAdapter {
+public class PagerAdapter extends FragmentStatePagerAdapter {
 
     private int numberOfTabs;
 
-    public PagesAdapter(@NonNull FragmentManager fm, int numberOfTabs) {
+    public PagerAdapter(@NonNull FragmentManager fm, int numberOfTabs) {
         super(fm);
         this.numberOfTabs = numberOfTabs;
     }
