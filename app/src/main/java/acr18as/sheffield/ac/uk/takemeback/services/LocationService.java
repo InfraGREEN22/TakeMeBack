@@ -21,6 +21,8 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -81,7 +83,6 @@ public class LocationService extends Service {
 
     private void getLocation() {
 
-        // ---------------------------------- LocationRequest ------------------------------------
         // Create the location request to start receiving updates
         LocationRequest mLocationRequestHighAccuracy = new LocationRequest();
         mLocationRequestHighAccuracy.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -111,6 +112,13 @@ public class LocationService extends Service {
                             Log.i("MAP", "new location " + mCurrentLocation.toString());
                             User user = ((UserClient)getApplicationContext()).getUser();
                             user.setUserLocation(mCurrentLocation);
+
+                            /*
+                            MarkerOptions markerOptions = new MarkerOptions();
+                            LatLng latLng = new LatLng(user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude());
+                            markerOptions.position(latLng);
+                            MapFragment.googleMap.addMarker(markerOptions);
+                            */
                         }
                     }
                 },

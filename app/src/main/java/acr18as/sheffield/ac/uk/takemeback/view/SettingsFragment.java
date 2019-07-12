@@ -1,10 +1,15 @@
 package acr18as.sheffield.ac.uk.takemeback.view;
 
+import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
 import acr18as.sheffield.ac.uk.takemeback.R;
+import acr18as.sheffield.ac.uk.takemeback.receivers.ARBroadcastReceiver;
+import acr18as.sheffield.ac.uk.takemeback.services.BackgroundDetectedActivitiesService;
+import acr18as.sheffield.ac.uk.takemeback.services.DetectedActivitiesIntentService;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -48,6 +53,8 @@ public class SettingsFragment extends Fragment {
     private RadioGroup radioGroup;
     private Switch modeSwitch;
 
+    private ARBroadcastReceiver broadcastReceiver;
+
     private static Fragment fragment;
     public static void setFragment(Fragment fragment) {
         SettingsFragment.fragment = fragment;
@@ -77,6 +84,8 @@ public class SettingsFragment extends Fragment {
         }
         setFragment(this);
         Log.d(TAG, "Fragment has been created.");
+
+        broadcastReceiver = new ARBroadcastReceiver();
     }
 
     @Override
@@ -112,9 +121,11 @@ public class SettingsFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     AUTOMODE = 1;
+                    startRecognitionService();
                 }
                 else {
                     AUTOMODE = 0;
+                    stopRecognitionService();
                 }
             }
         });
@@ -159,5 +170,37 @@ public class SettingsFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    //--------------------------------------------------------------------------------------------//
+    private void startRecognitionService() {
+        if(!isRecognitionServiceRunning()){
+            Intent serviceIntent = new Intent(getContext(), BackgroundDetectedActivitiesService.class);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+                getContext().startForegroundService(serviceIntent);
+            }else{
+                getContext().startService(serviceIntent);
+            }
+        }
+    }
+
+    private void stopRecognitionService() {
+        Intent serviceIntent = new Intent(getContext(), BackgroundDetectedActivitiesService.class);
+        getContext().stopService(serviceIntent);
+        Intent detectedARIntent = new Intent(getContext(), DetectedActivitiesIntentService.class);
+        getContext().stopService(detectedARIntent);
+    }
+
+    private boolean isRecognitionServiceRunning() {
+        ActivityManager manager = (ActivityManager)getContext().getSystemService(getContext().ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+            if("acr18as.sheffield.ac.uk.takemeback.services.BackgroundDetectedActivitiesService".equals(service.service.getClassName())) {
+                Log.d(TAG, "isRecognitionServiceRunning: recognition service is already running.");
+                return true;
+            }
+        }
+        Log.d(TAG, "isRecognitionServiceRunning: recognition service is not running.");
+        return false;
     }
 }

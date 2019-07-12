@@ -86,7 +86,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     private FusedLocationProviderClient mFusedLocationClient;
 
     private MapView mMapView;
-    private GoogleMap googleMap;
+    //TODO: Make it private when finished with testing
+    public static GoogleMap googleMap;
     private Marker savedLocationMarker;
     private GeoApiContext mGeoApiContext = null;
 
@@ -234,6 +235,13 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
 
         // starting the LocationService
         startLocationService();
+
+        if (user.getUserLocation() != null) {
+            MarkerOptions markerOptions = new MarkerOptions();
+            LatLng latLng = new LatLng(user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude());
+            markerOptions.position(latLng);
+            googleMap.addMarker(markerOptions);
+        }
     }
 
 
@@ -484,4 +492,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         user.getDestination().setDestinationPoint(mSavedLocation);
         Log.d(TAG, "setTestDestinationPoint: the mock destination has been set to 53.380884, -1.480858.");
     }
+
+
 }
