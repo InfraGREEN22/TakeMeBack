@@ -114,12 +114,15 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
             return;
         }
 
-        //DirectionsResult directionsResult = new DirectionsResult();
-
         setMarkers();
-        //calculateDirections();
         viewModel.calculateDirections().observe(this, directionsResult -> {
-            addPolylinesToMap(directionsResult);
+
+            viewModel.getResultingPath(directionsResult).observe(this, result -> {
+
+                Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(result));
+                polyline.setColor(ContextCompat.getColor(getApplicationContext(), R.color.Red));
+                polyline.setClickable(true);
+            });
         });
         zoomToTheRoute();
     }
@@ -158,90 +161,6 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         googleMap.animateCamera(CameraUpdateFactory.zoomIn());
         // Zoom out to zoom level 10, animating with a duration of 2 seconds.
         googleMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
-    }
-
-    /**
-     * Method for calculating directions from the user's current location to the destination point
-     * @param
-     */
-    private void calculateDirections(){
-        Log.d(TAG, "calculateDirections: calculating directions.");
-
-        if(user.getDestination().getDestinationPoint() == null || user.getUserLocation() == null) {
-            Toast.makeText(this, "Unable to build a route back", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
-                user.getDestination().getDestinationPoint().getLatitude(),
-                user.getDestination().getDestinationPoint().getLongitude()
-        );
-        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
-
-        // at this point, we want the most optimal route, so we ask for NO alternative routes
-        directions.alternatives(false);
-        if(SettingsFragment.DIRECTIONS_MODE == 0)
-            directions.mode(TravelMode.WALKING);
-        else
-            directions.mode(TravelMode.DRIVING);
-        directions.origin(
-                new com.google.maps.model.LatLng(
-                        user.getUserLocation().getLatitude(),
-                        user.getUserLocation().getLongitude()
-                )
-        );
-        Log.d(TAG, "calculateDirections: destination: " + destination.toString());
-        directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
-            @Override
-            public void onResult(DirectionsResult result) {
-                Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
-                Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
-                Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
-                Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
-                addPolylinesToMap(result);
-            }
-
-            @Override
-            public void onFailure(Throwable e) {
-                Log.e(TAG, "calculateDirections: Failed to get directions: " + e.getMessage() );
-
-            }
-        });
-    }
-
-    /**
-     * Method for drawing polylines on the map representing the route from the current user's location
-     * to the final destination point
-     * @param result
-     */
-    private void addPolylinesToMap(final DirectionsResult result){
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "run: result routes: " + result.routes.length);
-
-                for(DirectionsRoute route: result.routes){
-                    Log.d(TAG, "run: leg: " + route.legs[0].toString());
-                    List<com.google.maps.model.LatLng> decodedPath = PolylineEncoding.decode(route.overviewPolyline.getEncodedPath());
-
-                    List<com.google.android.gms.maps.model.LatLng> newDecodedPath = new ArrayList<>();
-
-                    // This loops through all the LatLng coordinates of ONE polyline.
-                    for(com.google.maps.model.LatLng latLng: decodedPath){
-
-//                        Log.d(TAG, "run: latlng: " + latLng.toString());
-
-                        newDecodedPath.add(new com.google.android.gms.maps.model.LatLng(
-                                latLng.lat,
-                                latLng.lng
-                        ));
-                    }
-                    Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(newDecodedPath));
-                    polyline.setColor(ContextCompat.getColor(getApplicationContext(), R.color.Red));
-                    polyline.setClickable(true);
-                }
-            }
-        });
     }
 
     /**

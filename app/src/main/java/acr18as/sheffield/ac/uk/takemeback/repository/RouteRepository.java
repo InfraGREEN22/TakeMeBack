@@ -99,17 +99,18 @@ public class RouteRepository {
                 Log.e(TAG, "calculateDirections: Failed to get directions: " + e.getMessage());
             }
         });
+
         return directionsResult;
     }
 
     /**
-     * Get polylines from the Direction result
+     * Get resulting path from the Direction result for drawing polylines
      * @param result
      */
-    /*
-    private LiveData<Polyline> getPolylines(final DirectionsResult result){
-        final MutableLiveData<Polyline> polylineResult = new MutableLiveData<>();
-        ArrayList<Polyline> polylinesArray = new ArrayList<>();
+
+    public LiveData<List<com.google.android.gms.maps.model.LatLng>> getResultingPath(final DirectionsResult result){
+
+        final MutableLiveData<List<com.google.android.gms.maps.model.LatLng>> resultPath = new MutableLiveData<>();
 
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -132,14 +133,12 @@ public class RouteRepository {
                                 latLng.lng
                         ));
                     }
-                    Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(newDecodedPath));
-                    //polyline.setColor(ContextCompat.getColor(getApplicationContext(), R.color.Red));
-                    //polyline.setClickable(true);
+                    resultPath.postValue(newDecodedPath);
                 }
             }
         });
 
-        return polylineResult;
-    }*/
+        return resultPath;
+    }
 
 }
