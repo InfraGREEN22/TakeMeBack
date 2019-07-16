@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:tag="SettingsFragment"
-    tools:context=".view.SettingsFragment">
+    tools:context=".controller.SettingsFragment">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

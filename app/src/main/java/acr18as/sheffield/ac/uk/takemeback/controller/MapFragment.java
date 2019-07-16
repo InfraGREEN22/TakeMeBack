@@ -1,4 +1,4 @@
-package acr18as.sheffield.ac.uk.takemeback.view;
+package acr18as.sheffield.ac.uk.takemeback.controller;
 
 import android.Manifest;
 import android.app.ActivityManager;
@@ -17,10 +17,8 @@ import acr18as.sheffield.ac.uk.takemeback.model.User;
 import acr18as.sheffield.ac.uk.takemeback.services.LocationService;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -42,21 +40,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
-import com.google.maps.PendingResult;
-import com.google.maps.internal.PolylineEncoding;
-import com.google.maps.model.DirectionsResult;
-import com.google.maps.model.DirectionsRoute;
-import com.google.maps.model.TravelMode;
-
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 

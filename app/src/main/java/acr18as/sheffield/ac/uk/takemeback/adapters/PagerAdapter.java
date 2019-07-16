@@ -1,13 +1,8 @@
 package acr18as.sheffield.ac.uk.takemeback.adapters;
 
-import android.view.ViewGroup;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import acr18as.sheffield.ac.uk.takemeback.view.AboutFragment;
-import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
-import acr18as.sheffield.ac.uk.takemeback.view.SettingsFragment;
+import acr18as.sheffield.ac.uk.takemeback.controller.AboutFragment;
+import acr18as.sheffield.ac.uk.takemeback.controller.MapFragment;
+import acr18as.sheffield.ac.uk.takemeback.controller.SettingsFragment;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;

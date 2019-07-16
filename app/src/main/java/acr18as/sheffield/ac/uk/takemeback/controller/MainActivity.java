@@ -1,23 +1,10 @@
-package acr18as.sheffield.ac.uk.takemeback.view;
+package acr18as.sheffield.ac.uk.takemeback.controller;
 
-import android.app.ActivityManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PorterDuff;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.google.android.gms.location.DetectedActivity;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.tabs.TabLayout;
 
 import acr18as.sheffield.ac.uk.takemeback.Constants;
@@ -26,8 +13,6 @@ import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.adapters.PagerAdapter;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import acr18as.sheffield.ac.uk.takemeback.receivers.ARBroadcastReceiver;
-import acr18as.sheffield.ac.uk.takemeback.services.BackgroundDetectedActivitiesService;
-import acr18as.sheffield.ac.uk.takemeback.services.DetectedActivitiesIntentService;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -137,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     //-----------------------------------------------------------------------------------------------//
 
+    /*
     private void startRecognitionService() {
         if(!isRecognitionServiceRunning()){
             Intent serviceIntent = new Intent(this, BackgroundDetectedActivitiesService.class);
@@ -169,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     }
 
     //-----------------------------------------------------------------------------------------------//
+
 
     private void handleUserActivity(int type, int confidence) {
         String label = null;
@@ -214,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
             Toast.makeText(this, "Activity: " + label, Toast.LENGTH_SHORT).show();
         }
     }
-
+    */
     @Override
     protected void onResume() {
         super.onResume();
@@ -229,7 +216,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
-        stopRecognitionService();
         super.onDestroy();
     }
 

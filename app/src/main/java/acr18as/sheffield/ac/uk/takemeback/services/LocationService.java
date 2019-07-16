@@ -21,15 +21,12 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DateFormat;
 import java.util.Date;
 
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
-import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;

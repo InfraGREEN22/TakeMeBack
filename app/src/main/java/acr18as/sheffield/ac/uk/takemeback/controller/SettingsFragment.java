@@ -1,4 +1,4 @@
-package acr18as.sheffield.ac.uk.takemeback.view;
+package acr18as.sheffield.ac.uk.takemeback.controller;
 
 import android.app.ActivityManager;
 import android.content.Context;

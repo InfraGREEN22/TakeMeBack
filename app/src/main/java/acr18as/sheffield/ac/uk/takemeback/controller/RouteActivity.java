@@ -1,11 +1,14 @@
-package acr18as.sheffield.ac.uk.takemeback.view;
+package acr18as.sheffield.ac.uk.takemeback.controller;
 
 import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
+import acr18as.sheffield.ac.uk.takemeback.viewmodel.RouteViewModel;
+import acr18as.sheffield.ac.uk.takemeback.viewmodelfactories.RouteViewModelFactory;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -27,7 +30,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -55,6 +57,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     private Marker startMarker;
     private Marker endMarker;
     private GeoApiContext mGeoApiContext = null;
+    private RouteViewModel viewModel;
 
     private Button cancelButton;
     private Button navigateButton;
@@ -74,6 +77,15 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         user = ((UserClient)getApplicationContext()).getUser();
         start = user.getUserLocation();
         end = user.getDestination().getDestinationPoint();
+
+        // instantiating GoogleApiContext object which is used for calculating directions
+        if(mGeoApiContext == null) {
+            mGeoApiContext = new GeoApiContext.Builder().apiKey(getString(R.string.google_maps_key)).build();
+        }
+
+        //ViewModel
+        RouteViewModelFactory factory = new RouteViewModelFactory(this.getApplication(), mGeoApiContext, this);
+        viewModel = ViewModelProviders.of(this, factory).get(RouteViewModel.class);
 
         cancelButton = findViewById(R.id.route_cancel_button);
         navigateButton = findViewById(R.id.route_navigate_button);
@@ -102,8 +114,13 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
             return;
         }
 
+        //DirectionsResult directionsResult = new DirectionsResult();
+
         setMarkers();
-        calculateDirections();
+        //calculateDirections();
+        viewModel.calculateDirections().observe(this, directionsResult -> {
+            addPolylinesToMap(directionsResult);
+        });
         zoomToTheRoute();
     }
 

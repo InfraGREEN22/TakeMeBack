@@ -17,8 +17,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import acr18as.sheffield.ac.uk.takemeback.Constants;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
-import acr18as.sheffield.ac.uk.takemeback.view.MainActivity;
-import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
+import acr18as.sheffield.ac.uk.takemeback.controller.MainActivity;
+import acr18as.sheffield.ac.uk.takemeback.controller.MapFragment;
 
 public class ARBroadcastReceiver extends BroadcastReceiver {
 
