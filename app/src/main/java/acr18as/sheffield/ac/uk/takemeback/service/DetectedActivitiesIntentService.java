@@ -1,4 +1,4 @@
-package acr18as.sheffield.ac.uk.takemeback.services;
+package acr18as.sheffield.ac.uk.takemeback.service;
 
 import android.app.IntentService;
 import android.content.Intent;

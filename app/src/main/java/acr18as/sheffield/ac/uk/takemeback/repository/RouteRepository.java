@@ -1,14 +1,11 @@
 package acr18as.sheffield.ac.uk.takemeback.repository;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
@@ -21,11 +18,9 @@ import com.google.maps.model.TravelMode;
 import java.util.ArrayList;
 import java.util.List;
 
-import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
-import acr18as.sheffield.ac.uk.takemeback.controller.SettingsFragment;
+import acr18as.sheffield.ac.uk.takemeback.view.SettingsFragment;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -107,7 +102,6 @@ public class RouteRepository {
      * Get resulting path from the Direction result for drawing polylines
      * @param result
      */
-
     public LiveData<List<com.google.android.gms.maps.model.LatLng>> getResultingPath(final DirectionsResult result){
 
         final MutableLiveData<List<com.google.android.gms.maps.model.LatLng>> resultPath = new MutableLiveData<>();

@@ -1,6 +1,5 @@
-package acr18as.sheffield.ac.uk.takemeback.services;
+package acr18as.sheffield.ac.uk.takemeback.service;
 
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,23 +10,17 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.location.ActivityRecognitionClient;
-import com.google.android.gms.location.ActivityRecognitionResult;
-import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-
-import java.util.ArrayList;
 
 import acr18as.sheffield.ac.uk.takemeback.Constants;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class BackgroundDetectedActivitiesService extends Service {
     private static final String TAG = BackgroundDetectedActivitiesService.class.getSimpleName();

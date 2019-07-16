@@ -1,4 +1,4 @@
-package acr18as.sheffield.ac.uk.takemeback.controller;
+package acr18as.sheffield.ac.uk.takemeback.view;
 
 import android.Manifest;
 import android.app.ActivityManager;
@@ -14,10 +14,13 @@ import android.os.Bundle;
 import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
-import acr18as.sheffield.ac.uk.takemeback.services.LocationService;
+import acr18as.sheffield.ac.uk.takemeback.service.LocationService;
+import acr18as.sheffield.ac.uk.takemeback.viewmodel.UserViewModel;
+import acr18as.sheffield.ac.uk.takemeback.viewmodelfactory.UserViewModelFactory;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.os.Looper;
 import android.util.Log;
@@ -80,6 +83,9 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     private String mParam1;
     private String mParam2;
 
+    //UserViewModel
+    private UserViewModel userViewModel;
+
     /**
      * Two main buttons of the Map fragment.
      */
@@ -100,10 +106,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     // TODO: Rename and change types and number of parameters
     public static MapFragment newInstance() {
         MapFragment fragment = new MapFragment();
-        /*Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);*/
         return fragment;
     }
 
@@ -115,7 +117,11 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         setFragment(this);
-        user = ((UserClient)getActivity().getApplicationContext()).getUser();
+        //user = ((UserClient)getActivity().getApplicationContext()).getUser();
+
+        UserViewModelFactory factory = new UserViewModelFactory(getActivity().getApplication(), getContext());
+        userViewModel = ViewModelProviders.of(this.getActivity(), factory).get(UserViewModel.class);
+
         Log.d(TAG, "Fragment has been created.");
     }
 
@@ -147,12 +153,14 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(user.getUserLocation() != null) {
-                    saveCurrentLocation();
-                }
-                else
-                    Toast.makeText(getContext(), "Something has gone wrong with saving... Cannot detect " +
-                            "your current location.", Toast.LENGTH_SHORT).show();
+                userViewModel.getUserLocation().observe(getActivity(), location -> {
+                    if(location != null) {
+                        saveCurrentLocation(); //
+                    }
+                    else
+                        Toast.makeText(getContext(), "Something has gone wrong with saving... Cannot detect " +
+                                "your current location.", Toast.LENGTH_SHORT).show();
+                });
             }
         });
 
@@ -161,14 +169,16 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         mFindRouteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(user.getDestination().getDestinationPoint() == null) {
-                    Toast.makeText(getContext(), "Cannot calculate a route because there is no destination" +
-                            " point.", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    Intent intent = new Intent(getActivity(), RouteActivity.class);
-                    startActivity(intent);
-                }
+                userViewModel.getUserDestinationLocation().observe(getActivity(), location -> {
+                    if(location == null) {
+                        Toast.makeText(getContext(), "Cannot calculate a route because there is no destination" +
+                                " point.", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        Intent intent = new Intent(getActivity(), RouteActivity.class);
+                        startActivity(intent);
+                    }
+                });
             }
         });
 
@@ -177,10 +187,12 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         fabDeleteDestination.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(user.getDestination().getDestinationPoint() != null)
-                    requestDestinationDelete();
-                else
-                    Toast.makeText(getContext(), "There is no destination point to delete!", Toast.LENGTH_SHORT).show();
+                userViewModel.getUserDestinationLocation().observe(getActivity(), location -> {
+                    if(location != null)
+                        requestDestinationDelete();
+                    else
+                        Toast.makeText(getContext(), "There is no destination point to delete!", Toast.LENGTH_SHORT).show();
+                });
             }
         });
 
@@ -189,12 +201,14 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         fabCurrentPosition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(user.getUserLocation() != null) {
-                    LatLng current = new LatLng(user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude());
-                    moveToCurrentLocation(current);
-                }
-                else
-                    Toast.makeText(getContext(), "Cannot detect your current location.", Toast.LENGTH_SHORT).show();
+                userViewModel.getUserLocation().observe(getActivity(), location -> {
+                    if(location != null) {
+                        LatLng current = new LatLng(location.getLatitude(), location.getLongitude());
+                        moveToCurrentLocation(current);
+                    }
+                    else
+                        Toast.makeText(getContext(), "Cannot detect your current location.", Toast.LENGTH_SHORT).show();
+                });
             }
         });
         return rootView;
@@ -221,12 +235,15 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         // starting the LocationService
         startLocationService();
 
-        if (user.getUserLocation() != null) {
-            MarkerOptions markerOptions = new MarkerOptions();
-            LatLng latLng = new LatLng(user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude());
-            markerOptions.position(latLng);
-            googleMap.addMarker(markerOptions);
-        }
+        userViewModel.getUserLocation().observe(this, location -> {
+            if (location != null) {
+                MarkerOptions markerOptions = new MarkerOptions();
+                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                markerOptions.position(latLng);
+                googleMap.addMarker(markerOptions);
+            }
+        });
+
     }
 
 
@@ -340,16 +357,24 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             if (savedLocationMarker != null) {
                 savedLocationMarker.remove();
             }
-            user.getDestination().setDestinationPoint(user.getUserLocation());
-            mSavedLocation = new Location(user.getDestination().getDestinationPoint());
-            LatLng latLng = new LatLng(mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
-            MarkerOptions markerOptions = new MarkerOptions();
-            markerOptions.position(latLng);
-            markerOptions.title("Your Destination");
-            //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-            savedLocationMarker = googleMap.addMarker(markerOptions);
-            Toast.makeText(getContext(), "Your current location has been saved at Lat: " + mSavedLocation.getLatitude()
-                    + " Long: " + mSavedLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+            //user.getDestination().setDestinationPoint(user.getUserLocation());
+            userViewModel.getUserLocation().observe(this, location -> {
+
+                userViewModel.setUserDestinationLocation(location);
+                userViewModel.getUserDestinationLocation().observe(this, destination -> {
+                    mSavedLocation = new Location(destination);                        //NullPointerException??? потому что ты делаешь getLocation, а тут надо setLocation
+                    LatLng latLng = new LatLng(mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.position(latLng);
+                    markerOptions.title("Your Destination");
+                    //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                    savedLocationMarker = googleMap.addMarker(markerOptions);
+                    Toast.makeText(getContext(), "Your current location has been saved at Lat: " + mSavedLocation.getLatitude()
+                            + " Long: " + mSavedLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                });
+
+            });
+
         }
         catch (Exception e) {
             Toast.makeText(getContext(), "Something has gone wrong with saving...", Toast.LENGTH_SHORT).show();
@@ -440,7 +465,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                         if(savedLocationMarker != null) {
                             try {
                                 savedLocationMarker.remove();
-                                user.getDestination().setDestinationPoint(null);
+                                userViewModel.setUserDestinationLocation(null);
                                 Toast.makeText(getContext(), "The destination point has been successfully deleted!", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "Deleted the saved location marker and position");
                             }
@@ -470,12 +495,19 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
      */
     private void setTestDestinationPoint() {
         // to prevent NullPointerException initially set the destination location as a user's current location
-        user.getDestination().setDestinationPoint(user.getUserLocation());
-        Location mSavedLocation = new Location(user.getDestination().getDestinationPoint());
-        //setting a point in front of the Regent Court
-        mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
-        user.getDestination().setDestinationPoint(mSavedLocation);
-        Log.d(TAG, "setTestDestinationPoint: the mock destination has been set to 53.380884, -1.480858.");
+        userViewModel.getUserLocation().observe(this, location -> {
+            userViewModel.setUserDestinationLocation(location);
+            userViewModel.getUserDestinationLocation().observe(this, destination -> {
+                Location mSavedLocation = new Location(destination);
+                //setting a point in front of the Regent Court
+                mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
+                //user.getDestination().setDestinationPoint(mSavedLocation);
+                userViewModel.setUserDestinationLocation(mSavedLocation);
+                Log.d(TAG, "setTestDestinationPoint: the mock destination has been set to 53.380884, -1.480858.");
+            });
+
+        });
+
     }
 
 

@@ -1,4 +1,4 @@
-package acr18as.sheffield.ac.uk.takemeback.controller;
+package acr18as.sheffield.ac.uk.takemeback.view;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -7,9 +7,9 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import acr18as.sheffield.ac.uk.takemeback.R;
-import acr18as.sheffield.ac.uk.takemeback.receivers.ARBroadcastReceiver;
-import acr18as.sheffield.ac.uk.takemeback.services.BackgroundDetectedActivitiesService;
-import acr18as.sheffield.ac.uk.takemeback.services.DetectedActivitiesIntentService;
+import acr18as.sheffield.ac.uk.takemeback.receiver.ARBroadcastReceiver;
+import acr18as.sheffield.ac.uk.takemeback.service.BackgroundDetectedActivitiesService;
+import acr18as.sheffield.ac.uk.takemeback.service.DetectedActivitiesIntentService;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;

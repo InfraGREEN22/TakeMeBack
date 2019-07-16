@@ -1,4 +1,4 @@
-package acr18as.sheffield.ac.uk.takemeback.services;
+package acr18as.sheffield.ac.uk.takemeback.service;
 
 import android.Manifest;
 import android.app.Notification;

@@ -1,4 +1,4 @@
-package acr18as.sheffield.ac.uk.takemeback.controller;
+package acr18as.sheffield.ac.uk.takemeback.view;
 
 import acr18as.sheffield.ac.uk.takemeback.R;
 import androidx.annotation.NonNull;

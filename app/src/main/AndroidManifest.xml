@@ -32,10 +32,10 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".controller.MainActivity"
+        <activity android:name=".view.MainActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".controller.SplashActivity"
+        <activity android:name=".view.SplashActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,21 +44,21 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".controller.RouteActivity"
+        <activity android:name=".view.RouteActivity"
             android:screenOrientation="portrait"/>
 
         <service
-            android:name=".services.LocationService"
+            android:name=".service.LocationService"
             android:stopWithTask="true"/>
-        <service android:name=".services.BackgroundDetectedActivitiesService"
+        <service android:name=".service.BackgroundDetectedActivitiesService"
             android:stopWithTask="true"
             android:exported="false"/>
-        <service android:name=".services.DetectedActivitiesIntentService"
+        <service android:name=".service.DetectedActivitiesIntentService"
             android:stopWithTask="true"
             android:exported="false"/>
 
 
-        <receiver android:name=".receivers.ARBroadcastReceiver" />
+        <receiver android:name=".receiver.ARBroadcastReceiver" />
     </application>
 
 </manifest>

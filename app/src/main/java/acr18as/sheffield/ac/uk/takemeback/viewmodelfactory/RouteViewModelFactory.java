@@ -1,4 +1,4 @@
-package acr18as.sheffield.ac.uk.takemeback.viewmodelfactories;
+package acr18as.sheffield.ac.uk.takemeback.viewmodelfactory;
 
 import android.app.Application;
 import android.content.Context;

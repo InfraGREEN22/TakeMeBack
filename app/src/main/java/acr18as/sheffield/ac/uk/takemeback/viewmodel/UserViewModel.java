@@ -1,31 +1,36 @@
 package acr18as.sheffield.ac.uk.takemeback.viewmodel;
 
 import android.app.Application;
+import android.content.Context;
+import android.location.Location;
 
-import acr18as.sheffield.ac.uk.takemeback.UserClient;
-import acr18as.sheffield.ac.uk.takemeback.model.User;
+import acr18as.sheffield.ac.uk.takemeback.repository.UserRepository;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 
 public class UserViewModel extends AndroidViewModel {
 
-    private MutableLiveData<User> user;
+    public UserRepository userRepository;
 
-    public UserViewModel(@NonNull Application application) {
+    public UserViewModel(@NonNull Application application, Context context) {
         super(application);
+        userRepository = new UserRepository(application, context);
     }
 
-    public LiveData<User> getUser() {
-        if (user == null) {
-            user = new MutableLiveData<User>();
-            loadUser();
-        }
-        return user;
+    public LiveData<Location> getUserLocation() {
+        return userRepository.getUserLocation();
     }
 
-    private void loadUser() {
-        //user = ((UserClient)getApplication().getApplicationContext()).getUser();
+    public LiveData<Location> getUserDestinationLocation() {
+        return userRepository.getUserDestinationLocation();
+    }
+
+    public void setUserLocation(Location location) {
+        userRepository.setUserLocation(location);
+    }
+
+    public void setUserDestinationLocation(Location location) {
+        userRepository.setUserDestinationLocation(location);
     }
 }
