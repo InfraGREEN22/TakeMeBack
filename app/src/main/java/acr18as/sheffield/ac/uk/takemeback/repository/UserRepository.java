@@ -20,16 +20,16 @@ public class UserRepository {
         mContext = context;
     }
 
-    public LiveData<Location> getUserLocation() {
+    public MutableLiveData<Location> getUserLocation() {
         final MutableLiveData<Location> userLocation = new MutableLiveData<>();
         Location location = ((UserClient)mContext.getApplicationContext()).getUser().getUserLocation();
         userLocation.postValue(location);
         return userLocation;
     }
 
-    public LiveData<Location> getUserDestinationLocation() {
+    public MutableLiveData<Location> getUserDestinationLocation() {
         final MutableLiveData<Location> destinationLocation = new MutableLiveData<>();
-        Location location = ((UserClient)mContext.getApplicationContext()).getUser().getDestination().getDestinationPoint();
+        Location location = ((UserClient)mContext.getApplicationContext()).getUser().getDestinationLocation();
         destinationLocation.postValue(location);
         return destinationLocation;
     }
@@ -40,7 +40,8 @@ public class UserRepository {
     }
 
     public void setUserDestinationLocation(Location location) {
-        //Location location = ((UserClient)mContext.getApplicationContext()).getUser().getDestination().getDestinationPoint();
-        ((UserClient)mContext.getApplicationContext()).getUser().getDestination().setDestinationPoint(location);
+        //Location location = ((UserClient)mContext.getApplicationContext()).getUser().getVisitedLocation().getDestinationPoint();
+        ((UserClient)mContext.getApplicationContext()).getUser().setDestinationLocation(location);
+
     }
 }

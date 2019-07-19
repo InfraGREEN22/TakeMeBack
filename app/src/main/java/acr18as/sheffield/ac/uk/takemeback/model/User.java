@@ -5,11 +5,11 @@ import android.location.Location;
 public class User {
 
     private Location userLocation;
-    private Destination destination;
+    private Location destinationLocation;
 
     public User() {
         this.userLocation = null;
-        this.destination = new Destination();
+        this.destinationLocation = null;
     }
 
     public Location getUserLocation() {
@@ -20,11 +20,11 @@ public class User {
         this.userLocation = userLocation;
     }
 
-    public Destination getDestination() {
-        return destination;
+    public Location getDestinationLocation() {
+        return destinationLocation;
     }
 
-    public void setDestination(Destination destination) {
-        this.destination = destination;
+    public void setDestinationLocation(Location location) {
+        this.destinationLocation = location;
     }
 }

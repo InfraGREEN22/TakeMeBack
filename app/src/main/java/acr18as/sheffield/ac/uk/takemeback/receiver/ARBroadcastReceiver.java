@@ -23,13 +23,18 @@ import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
 public class ARBroadcastReceiver extends BroadcastReceiver {
 
     private static String TAG = "ARBroadcastReceiver";
+    public static String STATE = "UNDETECTED";
+    public static boolean isSaved = false;
     private Context ctx;
     private User user;
     private MainActivity mainActivity;
+    private String label;
+    private Vibrator v;
 
     private Context getCtx() {
         return ctx;
     }
+    private MapFragment fragment = null;
 
     public void setMainActivity(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -44,50 +49,70 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
         }
         //ctx = context;
         user = ((UserClient)mainActivity.getApplicationContext()).getUser();
+        v = (Vibrator) mainActivity.getSystemService(Context.VIBRATOR_SERVICE);
+        //STATE = "UNDETECTED";
+        fragment = MapFragment.getFragment();
     }
 
     private void handleUserActivity(int type, int confidence) {
-        String label = null;
+        label = null;
 
-        switch (type) {
-            case DetectedActivity.IN_VEHICLE: {
-                label = "IN VEHICLE";
-                break;
-            }
-            case DetectedActivity.ON_FOOT: {
-                label = "ON FOOT";
-                if(user.getUserLocation() != null) {
-                    MarkerOptions markerOptions = new MarkerOptions();
-                    LatLng latLng = new LatLng(user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude());
-                    markerOptions.position(latLng);
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-                    MapFragment.googleMap.addMarker(markerOptions);
+        if(confidence > Constants.CONFIDENCE) {
+            switch (type) {
+                case DetectedActivity.IN_VEHICLE: {
+                    label = "IN VEHICLE";
+                    break;
                 }
+                case DetectedActivity.ON_FOOT: {
+                    //TODO: ПОМЕНЯЙ НА WALKING ПОТОМ!!!!!!!!!!!!!!!!!
+                    label = "ON FOOT";
+                    if (user.getUserLocation() != null) {
 
-                Vibrator v = (Vibrator) mainActivity.getSystemService(Context.VIBRATOR_SERVICE);
-                // Vibrate for 500 milliseconds
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-                } else {
-                    //deprecated in API 26
-                    v.vibrate(500);
+                        // можно тупо тут вызвать метод saveCurrentLocation из MapFragment вместо всего этого
+
+                        if (STATE.equals("UNDETECTED")) {
+                            //fragment.saveCurrentLocation();
+                            STATE = "DETECTED";
+                        } else
+                            break;
+                    }
+
+                    break;
                 }
-                break;
-            }
-            case DetectedActivity.STILL: {
-                label = "STILL";
-                break;
-            }
-            case DetectedActivity.UNKNOWN: {
-                label = "UNKNOWN";
-                break;
+                case DetectedActivity.STILL: {
+                    if (STATE.equals("DETECTED")) {
+                        if (isSaved)
+                            break;
+                        else {
+                            fragment.saveCurrentLocation();
+                            isSaved = true;
+                        }
+                        //STATE = "DETECTED";
+                    }
+                    label = "STILL";
+                    break;
+                }
+                case DetectedActivity.UNKNOWN: {
+                    label = "UNKNOWN";
+                    break;
+                }
             }
         }
 
-        Log.e(TAG, "User activity: " + label + ", Confidence: " + confidence);
+        if(label != null) {
+            Log.i(TAG, "User activity: " + label + ", Confidence: " + confidence);
+        }
 
-        if (confidence > Constants.CONFIDENCE) {
+        if (confidence > Constants.CONFIDENCE && label != null) {
             Toast.makeText(mainActivity.getApplicationContext(), "Activity: " + label, Toast.LENGTH_SHORT).show();
+            // Vibrate for 500 milliseconds
+            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                //deprecated in API 26
+                v.vibrate(500);
+            }*/
         }
     }
+
 }

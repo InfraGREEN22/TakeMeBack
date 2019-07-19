@@ -14,12 +14,14 @@ import android.os.Bundle;
 import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
+import acr18as.sheffield.ac.uk.takemeback.receiver.ARBroadcastReceiver;
 import acr18as.sheffield.ac.uk.takemeback.service.LocationService;
 import acr18as.sheffield.ac.uk.takemeback.viewmodel.UserViewModel;
 import acr18as.sheffield.ac.uk.takemeback.viewmodelfactory.UserViewModelFactory;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.os.Looper;
@@ -64,18 +66,18 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     private static final String ARG_PARAM2 = "param2";
     private static final String TAG = "MapFragment";
 
-    private static Fragment fragment;
-    public static void setFragment(Fragment fragment) {
+    private static MapFragment fragment;
+    public static void setFragment(MapFragment fragment) {
         MapFragment.fragment = fragment;
     }
-    public static Fragment getFragment() { return fragment; }
+    public static MapFragment getFragment() { return fragment; }
 
     private Location mSavedLocation;
     private FusedLocationProviderClient mFusedLocationClient;
 
     private MapView mMapView;
     //TODO: Make it private when finished with testing
-    public static GoogleMap googleMap;
+    private GoogleMap googleMap;
     private Marker savedLocationMarker;
     private GeoApiContext mGeoApiContext = null;
 
@@ -156,6 +158,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                 userViewModel.getUserLocation().observe(getActivity(), location -> {
                     if(location != null) {
                         saveCurrentLocation(); //
+                        //userViewModel.setUserDestinationLocation(location);
                     }
                     else
                         Toast.makeText(getContext(), "Something has gone wrong with saving... Cannot detect " +
@@ -182,7 +185,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             }
         });
 
-        // setting click event for a Delete Destination button
+        // setting click event for a Delete VisitedLocation button
         fabDeleteDestination = rootView.findViewById(R.id.fab_delete_destination);
         fabDeleteDestination.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -235,6 +238,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         // starting the LocationService
         startLocationService();
 
+        /*
         userViewModel.getUserLocation().observe(this, location -> {
             if (location != null) {
                 MarkerOptions markerOptions = new MarkerOptions();
@@ -242,8 +246,24 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                 markerOptions.position(latLng);
                 googleMap.addMarker(markerOptions);
             }
-        });
+        });*/
 
+        // is not observed after clicking on Save Location button... why?
+        userViewModel.getUserDestinationLocation().observe(getActivity(), destination -> {
+            if(destination != null) {
+                // if there is already one marker, remove it
+                if (savedLocationMarker != null) {
+                    savedLocationMarker.remove();
+                }
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.title("Your Destination");
+                LatLng latLng = new LatLng(destination.getLatitude(), destination.getLongitude());
+                markerOptions.position(latLng);
+                savedLocationMarker = googleMap.addMarker(markerOptions);
+                Toast.makeText(getContext(), "Your current location has been saved at Lat: " + mSavedLocation.getLatitude()
+                        + " Long: " + mSavedLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 
@@ -350,23 +370,24 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     }
 
     /**
-     * Private method for saving a final destination location
+     * Private method for MANUAL saving a final destination location and set a marker on it
      */
-    private void saveCurrentLocation() {
+    public void saveCurrentLocation() {
         try {
             if (savedLocationMarker != null) {
                 savedLocationMarker.remove();
             }
-            //user.getDestination().setDestinationPoint(user.getUserLocation());
-            userViewModel.getUserLocation().observe(this, location -> {
+            //user.getVisitedLocation().setDestinationPoint(user.getUserLocation());
+            userViewModel.getUserLocation().observe(getActivity(), location -> {
 
                 userViewModel.setUserDestinationLocation(location);
+
                 userViewModel.getUserDestinationLocation().observe(this, destination -> {
-                    mSavedLocation = new Location(destination);                        //NullPointerException??? потому что ты делаешь getLocation, а тут надо setLocation
+                    mSavedLocation = new Location(destination);
                     LatLng latLng = new LatLng(mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
                     MarkerOptions markerOptions = new MarkerOptions();
                     markerOptions.position(latLng);
-                    markerOptions.title("Your Destination");
+                    markerOptions.title("Your Destination Point");
                     //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
                     savedLocationMarker = googleMap.addMarker(markerOptions);
                     Toast.makeText(getContext(), "Your current location has been saved at Lat: " + mSavedLocation.getLatitude()
@@ -466,6 +487,15 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                             try {
                                 savedLocationMarker.remove();
                                 userViewModel.setUserDestinationLocation(null);
+                                try {
+                                    if (ARBroadcastReceiver.STATE.equals("DETECTED")) {
+                                        ARBroadcastReceiver.STATE = "UNDETECTED";
+                                        ARBroadcastReceiver.isSaved = false;
+                                    }
+                                }
+                                catch (NullPointerException e) {
+                                    Log.d(TAG, "Null object reference");
+                                }
                                 Toast.makeText(getContext(), "The destination point has been successfully deleted!", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "Deleted the saved location marker and position");
                             }
@@ -501,7 +531,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                 Location mSavedLocation = new Location(destination);
                 //setting a point in front of the Regent Court
                 mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
-                //user.getDestination().setDestinationPoint(mSavedLocation);
+                //user.getVisitedLocation().setDestinationPoint(mSavedLocation);
                 userViewModel.setUserDestinationLocation(mSavedLocation);
                 Log.d(TAG, "setTestDestinationPoint: the mock destination has been set to 53.380884, -1.480858.");
             });

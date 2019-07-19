@@ -50,18 +50,17 @@ public class RouteRepository {
      */
     public LiveData<DirectionsResult> calculateDirections(){
         final MutableLiveData<DirectionsResult> directionsResult = new MutableLiveData<>();
-        ArrayList<DirectionsResult> arrayListOfResults = new ArrayList<>();
 
         Log.d(TAG, "calculateDirections: calculating directions.");
 
-        if(user.getDestination().getDestinationPoint() == null || user.getUserLocation() == null) {
+        if(user.getDestinationLocation() == null || user.getUserLocation() == null) {
             Toast.makeText(context, "Unable to build a route back", Toast.LENGTH_SHORT).show();
             return null;
         }
 
         com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
-                user.getDestination().getDestinationPoint().getLatitude(),
-                user.getDestination().getDestinationPoint().getLongitude()
+                user.getDestinationLocation().getLatitude(),
+                user.getDestinationLocation().getLongitude()
         );
         DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
 

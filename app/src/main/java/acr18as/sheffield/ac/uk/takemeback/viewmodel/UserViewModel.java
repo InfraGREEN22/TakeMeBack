@@ -8,6 +8,7 @@ import acr18as.sheffield.ac.uk.takemeback.repository.UserRepository;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 public class UserViewModel extends AndroidViewModel {
 
@@ -18,11 +19,11 @@ public class UserViewModel extends AndroidViewModel {
         userRepository = new UserRepository(application, context);
     }
 
-    public LiveData<Location> getUserLocation() {
+    public MutableLiveData<Location> getUserLocation() {
         return userRepository.getUserLocation();
     }
 
-    public LiveData<Location> getUserDestinationLocation() {
+    public MutableLiveData<Location> getUserDestinationLocation() {
         return userRepository.getUserDestinationLocation();
     }
 

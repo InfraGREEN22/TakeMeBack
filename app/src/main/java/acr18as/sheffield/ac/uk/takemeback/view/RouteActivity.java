@@ -3,6 +3,7 @@ package acr18as.sheffield.ac.uk.takemeback.view;
 import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
+import acr18as.sheffield.ac.uk.takemeback.receiver.ARBroadcastReceiver;
 import acr18as.sheffield.ac.uk.takemeback.viewmodel.RouteViewModel;
 import acr18as.sheffield.ac.uk.takemeback.viewmodelfactory.RouteViewModelFactory;
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,7 +67,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         // getting the user we are building a route for and setting the start and end points
         user = ((UserClient)getApplicationContext()).getUser();
         start = user.getUserLocation();
-        end = user.getDestination().getDestinationPoint();
+        end = user.getDestinationLocation();
 
         // instantiating GoogleApiContext object which is used for calculating directions
         if(mGeoApiContext == null) {
@@ -133,7 +134,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         //LatLng endLatLng = new LatLng(53.380884, -1.480858);
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(endLatLng);
-        markerOptions.title("Your Destination");
+        markerOptions.title("Your VisitedLocation");
         endMarker = googleMap.addMarker(markerOptions);
         markerOptions.position(startLatLng);
         markerOptions.title("You are here");
@@ -204,6 +205,9 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                         mapIntent.setPackage("com.google.android.apps.maps");
 
+                        ARBroadcastReceiver.STATE = "UNDETECTED";
+                        ARBroadcastReceiver.isSaved = false;
+
                         try{
                             if (mapIntent.resolveActivity(getActivity().getPackageManager()) != null) {
                                 startActivity(mapIntent);
@@ -230,11 +234,11 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
 
     private void setTestDestinationPoint() {
         // to prevent NullPointerException initially set the destination location as a user's current location
-        user.getDestination().setDestinationPoint(user.getUserLocation());
-        Location mSavedLocation = new Location(user.getDestination().getDestinationPoint());
+        user.setDestinationLocation(user.getUserLocation());
+        Location mSavedLocation = new Location(user.getDestinationLocation());
         //setting a point in front of the Regent Court
         mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
-        user.getDestination().setDestinationPoint(mSavedLocation);
-        end = user.getDestination().getDestinationPoint();
+        user.setDestinationLocation(mSavedLocation);
+        end = user.getDestinationLocation();
     }
 }
