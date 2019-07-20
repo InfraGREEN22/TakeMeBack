@@ -1,5 +1,7 @@
 package acr18as.sheffield.ac.uk.takemeback.roomdb;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.io.Serializable;
 
 import androidx.room.ColumnInfo;
@@ -20,6 +22,12 @@ public class VisitedLocation implements Serializable {
 
     @ColumnInfo(name = "timestamp")
     private String timestamp;
+
+    public VisitedLocation(double lat, double lon, String timestamp) {
+        this.lat = lat;
+        this.lon = lon;
+        this.timestamp = timestamp;
+    }
 
     public int getId() {
         return id;

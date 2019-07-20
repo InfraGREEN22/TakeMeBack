@@ -4,7 +4,9 @@ import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import acr18as.sheffield.ac.uk.takemeback.receiver.ARBroadcastReceiver;
+import acr18as.sheffield.ac.uk.takemeback.roomdb.VisitedLocation;
 import acr18as.sheffield.ac.uk.takemeback.viewmodel.RouteViewModel;
+import acr18as.sheffield.ac.uk.takemeback.viewmodel.VisitedLocationViewModel;
 import acr18as.sheffield.ac.uk.takemeback.viewmodelfactory.RouteViewModelFactory;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -36,6 +38,9 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.GeoApiContext;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 //import com.google.maps.model.LatLng;
 
 
@@ -49,6 +54,8 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     private Marker endMarker;
     private GeoApiContext mGeoApiContext = null;
     private RouteViewModel routeViewModel;
+    private VisitedLocationViewModel visitedLocationViewModel;
+    private SimpleDateFormat simpleDateFormat;
 
     private Button cancelButton;
     private Button navigateButton;
@@ -74,9 +81,12 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
             mGeoApiContext = new GeoApiContext.Builder().apiKey(getString(R.string.google_maps_key)).build();
         }
 
+        simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh-mm-ss");
+
         //ViewModel
         RouteViewModelFactory factory = new RouteViewModelFactory(this.getApplication(), mGeoApiContext, this);
         routeViewModel = ViewModelProviders.of(this, factory).get(RouteViewModel.class);
+        visitedLocationViewModel = ViewModelProviders.of(this).get(VisitedLocationViewModel.class);
 
         cancelButton = findViewById(R.id.route_cancel_button);
         navigateButton = findViewById(R.id.route_navigate_button);
@@ -196,6 +206,8 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
                         String latitude = String.valueOf(endMarker.getPosition().latitude);
                         String longitude = String.valueOf(endMarker.getPosition().longitude);
 
+                        insertSavedLocation(endMarker.getPosition().latitude, endMarker.getPosition().longitude);
+
                         Uri gmmIntentUri = null;
                         if(SettingsFragment.DIRECTIONS_MODE == 0)
                             gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=w");
@@ -226,6 +238,14 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
                 });
         final AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    private void insertSavedLocation(double latitude, double longitude) {
+        //LatLng latLng = new LatLng(latitude, longitude);
+        String timestamp = simpleDateFormat.format(new Date());
+
+        VisitedLocation location = new VisitedLocation(latitude, longitude, timestamp);
+        visitedLocationViewModel.insert(location);
     }
 
     /////////////////////////////////////////////////////////////

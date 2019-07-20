@@ -15,8 +15,10 @@ import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import acr18as.sheffield.ac.uk.takemeback.receiver.ARBroadcastReceiver;
+import acr18as.sheffield.ac.uk.takemeback.roomdb.VisitedLocation;
 import acr18as.sheffield.ac.uk.takemeback.service.LocationService;
 import acr18as.sheffield.ac.uk.takemeback.viewmodel.UserViewModel;
+import acr18as.sheffield.ac.uk.takemeback.viewmodel.VisitedLocationViewModel;
 import acr18as.sheffield.ac.uk.takemeback.viewmodelfactory.UserViewModelFactory;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -42,11 +44,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.maps.GeoApiContext;
+
+import java.util.ArrayList;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 
@@ -79,6 +84,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     //TODO: Make it private when finished with testing
     private GoogleMap googleMap;
     private Marker savedLocationMarker;
+    private ArrayList<Marker> visitedMarkers;
     private GeoApiContext mGeoApiContext = null;
 
     // TODO: Rename and change types of parameters
@@ -87,6 +93,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
 
     //UserViewModel
     private UserViewModel userViewModel;
+    private VisitedLocationViewModel visitedLocationViewModel;
 
     /**
      * Two main buttons of the Map fragment.
@@ -119,10 +126,12 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         setFragment(this);
+        visitedMarkers = new ArrayList<>();
         //user = ((UserClient)getActivity().getApplicationContext()).getUser();
 
         UserViewModelFactory factory = new UserViewModelFactory(getActivity().getApplication(), getContext());
         userViewModel = ViewModelProviders.of(this.getActivity(), factory).get(UserViewModel.class);
+        visitedLocationViewModel = ViewModelProviders.of(this.getActivity()).get(VisitedLocationViewModel.class);
 
         Log.d(TAG, "Fragment has been created.");
     }
@@ -262,6 +271,21 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                 savedLocationMarker = googleMap.addMarker(markerOptions);
                 Toast.makeText(getContext(), "Your current location has been saved at Lat: " + mSavedLocation.getLatitude()
                         + " Long: " + mSavedLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        visitedLocationViewModel.getAllLocations().observe(getActivity(), locations -> {
+            if(!locations.isEmpty()) {
+                if(!visitedMarkers.isEmpty())
+                    removeMarkers();
+                for(VisitedLocation loc : locations) {
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.title(loc.getTimestamp());
+                    LatLng latLng = new LatLng(loc.getLat(), loc.getLon());
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                    markerOptions.position(latLng);
+                    googleMap.addMarker(markerOptions);
+                }
             }
         });
     }
@@ -514,6 +538,12 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                 });
         final AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    private void removeMarkers() {
+        for (Marker m : visitedMarkers) {
+            m.remove();
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
