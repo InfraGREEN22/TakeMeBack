@@ -23,7 +23,8 @@ public interface VisitedLocationDAO {
 
     @Query("SELECT * FROM visited_location_table ORDER BY id")
     LiveData<List<VisitedLocation>> getAllLocations();
-    /*
-    @Query("SELECT * FROM picture_table WHERE title LIKE '%' || :key || '%' OR description LIKE '%' || :key || '%'")
-    LiveData<List<Picture>> search(String key);*/
+
+    @Query("DELETE FROM visited_location_table")
+    void deleteAllLocations();
+
 }

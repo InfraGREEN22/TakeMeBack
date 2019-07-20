@@ -56,7 +56,8 @@
     <Button
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
+        android:id="@+id/clear_database_button"
         android:layout_below="@+id/history_text"
-        android:text="Clear"/>
+        android:text="Clear Visited Location History"/>
 
 </RelativeLayout>

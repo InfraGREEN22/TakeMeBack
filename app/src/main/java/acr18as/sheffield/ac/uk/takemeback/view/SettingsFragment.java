@@ -1,7 +1,9 @@
 package acr18as.sheffield.ac.uk.takemeback.view;
 
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,16 +12,20 @@ import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.receiver.ARBroadcastReceiver;
 import acr18as.sheffield.ac.uk.takemeback.service.BackgroundDetectedActivitiesService;
 import acr18as.sheffield.ac.uk.takemeback.service.DetectedActivitiesIntentService;
+import acr18as.sheffield.ac.uk.takemeback.viewmodel.VisitedLocationViewModel;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
+import android.widget.Toast;
 
 
 /**
@@ -52,8 +58,11 @@ public class SettingsFragment extends Fragment {
     private RadioButton radioDrivingMode;
     private RadioGroup radioGroup;
     private Switch modeSwitch;
+    private Button clearDatabaseButton;
 
     private ARBroadcastReceiver broadcastReceiver;
+
+    private VisitedLocationViewModel visitedLocationViewModel;
 
     private static Fragment fragment;
     public static void setFragment(Fragment fragment) {
@@ -86,6 +95,7 @@ public class SettingsFragment extends Fragment {
         Log.d(TAG, "Fragment has been created.");
 
         broadcastReceiver = new ARBroadcastReceiver();
+        visitedLocationViewModel = ViewModelProviders.of(getActivity()).get(VisitedLocationViewModel.class);
     }
 
     @Override
@@ -98,6 +108,7 @@ public class SettingsFragment extends Fragment {
         radioGroup = rootView.findViewById(R.id.directions_mode_radio_group);
         radioWalkingMode.setChecked(true);
         modeSwitch = rootView.findViewById(R.id.activity_recognition_mode_switch);
+        clearDatabaseButton = rootView.findViewById(R.id.clear_database_button);
 
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -127,6 +138,34 @@ public class SettingsFragment extends Fragment {
                     AUTOMODE = 0;
                     stopRecognitionService();
                 }
+            }
+        });
+
+        clearDatabaseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage("Are you sure you want to delete all the previously visited points? This action cannot be undone!")
+                        .setCancelable(true)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                try {
+                                    visitedLocationViewModel.deleteAllLocations();
+                                }
+                                catch (Exception e) {
+                                    Log.e(TAG, "Something's went wrong with the db purging");
+                                    e.printStackTrace();
+                                }
+                                Toast.makeText(getActivity(), "All the visited locations have been successfully deleted!", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                dialog.cancel();
+                            }
+                        });
+                final AlertDialog alert = builder.create();
+                alert.show();
             }
         });
 

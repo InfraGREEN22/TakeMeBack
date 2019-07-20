@@ -52,6 +52,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.maps.GeoApiContext;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 
@@ -84,7 +85,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     //TODO: Make it private when finished with testing
     private GoogleMap googleMap;
     private Marker savedLocationMarker;
-    private ArrayList<Marker> visitedMarkers;
+    public ArrayList<Marker> visitedMarkers;
     private GeoApiContext mGeoApiContext = null;
 
     // TODO: Rename and change types of parameters
@@ -274,17 +275,27 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             }
         });
 
-        visitedLocationViewModel.getAllLocations().observe(getActivity(), locations -> {
-            if(!locations.isEmpty()) {
-                if(!visitedMarkers.isEmpty())
-                    removeMarkers();
-                for(VisitedLocation loc : locations) {
-                    MarkerOptions markerOptions = new MarkerOptions();
-                    markerOptions.title(loc.getTimestamp());
-                    LatLng latLng = new LatLng(loc.getLat(), loc.getLon());
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                    markerOptions.position(latLng);
-                    googleMap.addMarker(markerOptions);
+        visitedLocationViewModel.getAllLocations().observe(getActivity(), new Observer<List<VisitedLocation>>() {
+            @Override
+            public void onChanged(List<VisitedLocation> locations) {
+                if(!locations.isEmpty()) {
+                    if(!visitedMarkers.isEmpty())
+                        removeMarkers();
+                    for(VisitedLocation loc : locations) {
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.title(loc.getTimestamp());
+                        LatLng latLng = new LatLng(loc.getLat(), loc.getLon());
+                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                        markerOptions.position(latLng);
+                        Marker marker = googleMap.addMarker(markerOptions);
+                        visitedMarkers.add(marker);
+                    }
+                }
+                else {
+                    if(!visitedMarkers.isEmpty()) {
+                        removeMarkers();
+                        visitedMarkers.clear();
+                    }
                 }
             }
         });

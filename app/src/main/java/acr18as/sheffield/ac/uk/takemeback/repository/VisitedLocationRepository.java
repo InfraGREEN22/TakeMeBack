@@ -36,15 +36,32 @@ public class VisitedLocationRepository {
         new DeleteLocationAsyncTask(mLocationsDAO).execute(location);
     }
 
+    public void deleteAllLocations() {
+        new DeleteAllLocationsAsyncTask(mLocationsDAO).execute();
+    }
+
 
     public LiveData<List<VisitedLocation>> getAllLocations() {
         return mAllLocations;
     }
 
 
-    /*public LiveData<List<VisitedLocation>> search(String key) {
-        return mLocationsDAO.search(key);
-    }*/
+    //-------------- ASYNC TASKS ------------------------//
+
+
+    private static class DeleteAllLocationsAsyncTask extends AsyncTask<Void, Void, Void> {
+        private VisitedLocationDAO mLocationsDAO;
+
+        DeleteAllLocationsAsyncTask(VisitedLocationDAO dao) {
+            this.mLocationsDAO = dao;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            mLocationsDAO.deleteAllLocations();
+            return null;
+        }
+    }
 
 
     public static class InsertLocationAsyncTask extends AsyncTask<VisitedLocation, Void, Void> {

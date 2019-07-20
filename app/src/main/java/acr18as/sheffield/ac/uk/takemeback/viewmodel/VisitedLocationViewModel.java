@@ -39,4 +39,6 @@ public class VisitedLocationViewModel extends AndroidViewModel {
         return allLocations;
     }
 
+    public void deleteAllLocations() {repository.deleteAllLocations();}
+
 }
