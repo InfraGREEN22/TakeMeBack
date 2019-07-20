@@ -15,8 +15,10 @@ import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import acr18as.sheffield.ac.uk.takemeback.receiver.ARBroadcastReceiver;
+import acr18as.sheffield.ac.uk.takemeback.roomdb.SavedLocation;
 import acr18as.sheffield.ac.uk.takemeback.roomdb.VisitedLocation;
 import acr18as.sheffield.ac.uk.takemeback.service.LocationService;
+import acr18as.sheffield.ac.uk.takemeback.viewmodel.SavedLocationViewModel;
 import acr18as.sheffield.ac.uk.takemeback.viewmodel.UserViewModel;
 import acr18as.sheffield.ac.uk.takemeback.viewmodel.VisitedLocationViewModel;
 import acr18as.sheffield.ac.uk.takemeback.viewmodelfactory.UserViewModelFactory;
@@ -95,6 +97,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     //UserViewModel
     private UserViewModel userViewModel;
     private VisitedLocationViewModel visitedLocationViewModel;
+    private SavedLocationViewModel savedLocationViewModel;
 
     /**
      * Two main buttons of the Map fragment.
@@ -133,6 +136,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         UserViewModelFactory factory = new UserViewModelFactory(getActivity().getApplication(), getContext());
         userViewModel = ViewModelProviders.of(this.getActivity(), factory).get(UserViewModel.class);
         visitedLocationViewModel = ViewModelProviders.of(this.getActivity()).get(VisitedLocationViewModel.class);
+        savedLocationViewModel = ViewModelProviders.of((this.getActivity())).get(SavedLocationViewModel.class);
 
         Log.d(TAG, "Fragment has been created.");
     }
@@ -299,6 +303,20 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                 }
             }
         });
+
+        /*
+        savedLocationViewModel.getLastSavedLocation().observe(getActivity(), new Observer<SavedLocation>() {
+            @Override
+            public void onChanged(SavedLocation savedLocation) {
+                if(savedLocation != null) {
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.title("Your Destination Point");
+                    LatLng latLng = new LatLng(savedLocation.getLat(), savedLocation.getLon());
+                    markerOptions.position(latLng);
+                    savedLocationMarker = googleMap.addMarker(markerOptions);
+                }
+            }
+        });*/
     }
 
 

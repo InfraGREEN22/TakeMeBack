@@ -26,5 +26,4 @@ public interface VisitedLocationDAO {
 
     @Query("DELETE FROM visited_location_table")
     void deleteAllLocations();
-
 }
