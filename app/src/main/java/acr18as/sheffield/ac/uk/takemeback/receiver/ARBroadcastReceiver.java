@@ -17,8 +17,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import acr18as.sheffield.ac.uk.takemeback.Constants;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
+import acr18as.sheffield.ac.uk.takemeback.roomdb.SavedLocation;
 import acr18as.sheffield.ac.uk.takemeback.view.MainActivity;
 import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
+import acr18as.sheffield.ac.uk.takemeback.viewmodel.SavedLocationViewModel;
+import acr18as.sheffield.ac.uk.takemeback.viewmodel.UserViewModel;
+import acr18as.sheffield.ac.uk.takemeback.viewmodelfactory.UserViewModelFactory;
+import androidx.lifecycle.ViewModelProviders;
 
 public class ARBroadcastReceiver extends BroadcastReceiver {
 
@@ -30,6 +35,8 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
     private MainActivity mainActivity;
     private String label;
     private Vibrator v;
+    private SavedLocationViewModel savedLocationViewModel;
+    private UserViewModel userViewModel;
 
     private Context getCtx() {
         return ctx;
@@ -49,6 +56,12 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
         }
         //ctx = context;
         user = ((UserClient)mainActivity.getApplicationContext()).getUser();
+
+        // providing necessary viewmodels
+        UserViewModelFactory factory = new UserViewModelFactory(mainActivity.getApplication(), context);
+        userViewModel = ViewModelProviders.of(mainActivity, factory).get(UserViewModel.class);
+        savedLocationViewModel = ViewModelProviders.of((mainActivity)).get(SavedLocationViewModel.class);
+
         v = (Vibrator) mainActivity.getSystemService(Context.VIBRATOR_SERVICE);
         //STATE = "UNDETECTED";
         fragment = MapFragment.getFragment();
@@ -67,11 +80,9 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
                     //TODO: ПОМЕНЯЙ НА WALKING ПОТОМ!!!!!!!!!!!!!!!!!
                     label = "ON FOOT";
                     if (user.getUserLocation() != null) {
-
-                        // можно тупо тут вызвать метод saveCurrentLocation из MapFragment вместо всего этого
-
                         if (STATE.equals("UNDETECTED")) {
                             //fragment.saveCurrentLocation();
+                            //saveCurrentLocation();
                             STATE = "DETECTED";
                         } else
                             break;
@@ -84,7 +95,7 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
                         if (isSaved)
                             break;
                         else {
-                            fragment.saveCurrentLocation();
+                            saveCurrentLocation();
                             isSaved = true;
                         }
                         //STATE = "DETECTED";
@@ -112,6 +123,30 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
                 //deprecated in API 26
                 v.vibrate(500);
             }*/
+        }
+    }
+
+    public void saveCurrentLocation() {
+        try {
+            userViewModel.getUserLocation().observe(mainActivity, location -> {
+
+                userViewModel.setUserDestinationLocation(location);
+                SavedLocation savedLocation = new SavedLocation(location.getLatitude(), location.getLongitude());
+                try {
+                    savedLocationViewModel.insert(savedLocation);
+                    Toast.makeText(mainActivity, "Your current location has been saved at Lat: " + savedLocation.getLat()
+                            + " Long: " + savedLocation.getLon(), Toast.LENGTH_SHORT).show();
+                }
+                catch (Exception e) {
+                    Toast.makeText(mainActivity, "Sorry, but the location cannot be saved...", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+            });
+
+        }
+        catch (Exception e) {
+            Toast.makeText(mainActivity.getApplicationContext(), "Something has gone wrong with saving...", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
         }
     }
 
