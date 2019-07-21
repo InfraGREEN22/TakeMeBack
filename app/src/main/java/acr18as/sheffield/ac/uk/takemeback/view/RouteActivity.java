@@ -4,13 +4,16 @@ import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import acr18as.sheffield.ac.uk.takemeback.receiver.ARBroadcastReceiver;
+import acr18as.sheffield.ac.uk.takemeback.roomdb.SavedLocation;
 import acr18as.sheffield.ac.uk.takemeback.roomdb.VisitedLocation;
 import acr18as.sheffield.ac.uk.takemeback.viewmodel.RouteViewModel;
+import acr18as.sheffield.ac.uk.takemeback.viewmodel.SavedLocationViewModel;
 import acr18as.sheffield.ac.uk.takemeback.viewmodel.VisitedLocationViewModel;
 import acr18as.sheffield.ac.uk.takemeback.viewmodelfactory.RouteViewModelFactory;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.Manifest;
@@ -55,6 +58,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     private GeoApiContext mGeoApiContext = null;
     private RouteViewModel routeViewModel;
     private VisitedLocationViewModel visitedLocationViewModel;
+    private SavedLocationViewModel savedLocationViewModel;
     private SimpleDateFormat simpleDateFormat;
 
     private Button cancelButton;
@@ -74,7 +78,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         // getting the user we are building a route for and setting the start and end points
         user = ((UserClient)getApplicationContext()).getUser();
         start = user.getUserLocation();
-        end = user.getDestinationLocation();
+        //end = user.getDestinationLocation();
 
         // instantiating GoogleApiContext object which is used for calculating directions
         if(mGeoApiContext == null) {
@@ -87,6 +91,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         RouteViewModelFactory factory = new RouteViewModelFactory(this.getApplication(), mGeoApiContext, this);
         routeViewModel = ViewModelProviders.of(this, factory).get(RouteViewModel.class);
         visitedLocationViewModel = ViewModelProviders.of(this).get(VisitedLocationViewModel.class);
+        savedLocationViewModel = ViewModelProviders.of(this).get(SavedLocationViewModel.class);
 
         cancelButton = findViewById(R.id.route_cancel_button);
         navigateButton = findViewById(R.id.route_navigate_button);
@@ -115,16 +120,50 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
             return;
         }
 
-        setMarkers();
-        routeViewModel.calculateDirections().observe(this, directionsResult -> {
-
-            routeViewModel.getResultingPath(directionsResult).observe(this, result -> {
-
-                Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(result));
-                polyline.setColor(ContextCompat.getColor(getApplicationContext(), R.color.Red));
-                polyline.setClickable(true);
-            });
+        savedLocationViewModel.getLastSavedLocation().observe(this, new Observer<SavedLocation>() {
+            @Override
+            public void onChanged(SavedLocation savedLocation) {
+                try {
+                    Location temp = new Location("Temp");
+                    temp.setLatitude(savedLocation.getLat());
+                    temp.setLongitude(savedLocation.getLon());
+                    temp.setTime(new Date().getTime()); //Set time as current Date
+                    end = temp;
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         });
+
+        setMarkers();
+
+        try {
+            savedLocationViewModel.getLastSavedLocation().observe(this, new Observer<SavedLocation>() {
+                @Override
+                public void onChanged(SavedLocation savedLocation) {
+                    Location endLocation = new Location("endLocation");
+                    endLocation.setLatitude(savedLocation.getLat());
+                    endLocation.setLongitude(savedLocation.getLon());
+                    //endLocation.setTime(new Date().getTime());
+
+                    routeViewModel.calculateDirections(endLocation).observe(getActivity(), directionsResult -> {
+
+                        routeViewModel.getResultingPath(directionsResult).observe(getActivity(), result -> {
+
+                            Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(result));
+                            polyline.setColor(ContextCompat.getColor(getApplicationContext(), R.color.Red));
+                            polyline.setClickable(true);
+                        });
+                    });
+                }
+            });
+
+        }
+        catch (NullPointerException e) {
+            Log.e(TAG, "RouteViewModel error: ");
+            e.printStackTrace();
+        }
         zoomToTheRoute();
     }
 
@@ -140,12 +179,18 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         // TODO: Remove the method call below when the end point saving is done
         //setTestDestinationPoint();
 
-        LatLng endLatLng = new LatLng(end.getLatitude(), end.getLongitude());
-        //LatLng endLatLng = new LatLng(53.380884, -1.480858);
         MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(endLatLng);
-        markerOptions.title("Your VisitedLocation");
-        endMarker = googleMap.addMarker(markerOptions);
+        savedLocationViewModel.getLastSavedLocation().observe(this, new Observer<SavedLocation>() {
+            @Override
+            public void onChanged(SavedLocation savedLocation) {
+                LatLng endLatLng = new LatLng(savedLocation.getLat(), savedLocation.getLon());
+                markerOptions.position(endLatLng);
+                markerOptions.title("Your Destination");
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                endMarker = googleMap.addMarker(markerOptions);
+            }
+        });
+        //LatLng endLatLng = new LatLng(53.380884, -1.480858);
         markerOptions.position(startLatLng);
         markerOptions.title("You are here");
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));

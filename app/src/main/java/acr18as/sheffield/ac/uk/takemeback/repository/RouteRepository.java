@@ -1,6 +1,7 @@
 package acr18as.sheffield.ac.uk.takemeback.repository;
 
 import android.content.Context;
+import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
+import acr18as.sheffield.ac.uk.takemeback.roomdb.SavedLocation;
 import acr18as.sheffield.ac.uk.takemeback.view.SettingsFragment;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import androidx.lifecycle.LiveData;
@@ -48,19 +50,19 @@ public class RouteRepository {
      * Calculating directions
      * @return
      */
-    public LiveData<DirectionsResult> calculateDirections(){
+    public LiveData<DirectionsResult> calculateDirections(Location endLocation){
         final MutableLiveData<DirectionsResult> directionsResult = new MutableLiveData<>();
 
         Log.d(TAG, "calculateDirections: calculating directions.");
 
-        if(user.getDestinationLocation() == null || user.getUserLocation() == null) {
+        if(endLocation == null || user.getUserLocation() == null) {
             Toast.makeText(context, "Unable to build a route back", Toast.LENGTH_SHORT).show();
             return null;
         }
 
         com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
-                user.getDestinationLocation().getLatitude(),
-                user.getDestinationLocation().getLongitude()
+                endLocation.getLatitude(),
+                endLocation.getLongitude()
         );
         DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
 
