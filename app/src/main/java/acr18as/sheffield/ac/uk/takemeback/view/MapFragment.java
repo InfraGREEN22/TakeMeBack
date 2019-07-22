@@ -339,6 +339,17 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     @Override
     public void onResume() {
         super.onResume();
+        try {
+            userViewModel.getUserLocation().observe(getActivity(), location -> {
+                if(location != null) {
+                    LatLng currentLoc = new LatLng(location.getLatitude(), location.getLongitude());
+                    moveToCurrentLocation(currentLoc);
+                }
+            });
+        }
+        catch (NullPointerException e) {
+            Log.e(TAG, "Cannot detect the current location");
+        }
         if (SettingsFragment.AUTOMODE == 1) {
             hideSaveButton();
         }

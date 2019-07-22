@@ -72,17 +72,15 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
 
         if(confidence > Constants.CONFIDENCE) {
             switch (type) {
+                /*
                 case DetectedActivity.IN_VEHICLE: {
                     label = "IN VEHICLE";
                     break;
-                }
-                case DetectedActivity.ON_FOOT: {
-                    //TODO: ПОМЕНЯЙ НА WALKING ПОТОМ!!!!!!!!!!!!!!!!!
-                    label = "ON FOOT";
+                }*/
+                case DetectedActivity.IN_VEHICLE: {
+                    label = "IN VEHICLE";
                     if (user.getUserLocation() != null) {
                         if (STATE.equals("UNDETECTED")) {
-                            //fragment.saveCurrentLocation();
-                            //saveCurrentLocation();
                             STATE = "DETECTED";
                         } else
                             break;
@@ -90,7 +88,16 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
 
                     break;
                 }
-                case DetectedActivity.STILL: {
+                case DetectedActivity.ON_FOOT: {
+                    label = "ON FOOT";
+                    if (STATE.equals("DETECTED")) {
+                        saveCurrentLocation();
+                        STATE = "UNDETECTED";
+                    }
+                    break;
+                }
+                /*
+                    case DetectedActivity.ON_FOOT: {
                     if (STATE.equals("DETECTED")) {
                         if (isSaved)
                             break;
@@ -103,10 +110,7 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
                     label = "STILL";
                     break;
                 }
-                case DetectedActivity.UNKNOWN: {
-                    label = "UNKNOWN";
-                    break;
-                }
+                 */
             }
         }
 

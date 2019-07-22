@@ -242,4 +242,9 @@ public class SettingsFragment extends Fragment {
         Log.d(TAG, "isRecognitionServiceRunning: recognition service is not running.");
         return false;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
 }
