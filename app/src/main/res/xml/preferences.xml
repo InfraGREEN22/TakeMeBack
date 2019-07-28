@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:title="Automatic Mode"
+        android:key="automode_category"
+        app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+            android:key="automode_switch"
+            android:title="Disable/Enable Automatic Mode"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Directions Mode"
+        android:key="directions_mode_category"
+        app:iconSpaceReserved="false">
+        <ListPreference
+            android:key="directions_mode"
+            android:title="Directions Mode"
+            android:defaultValue="0"
+            android:entries="@array/directions_names_array"
+            android:entryValues="@array/directions_values_array"
+            android:summary="Select between walking and driving mode"
+            app:iconSpaceReserved="false"
+            />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="history_category"
+        android:title="Visited Locations History"
+        app:iconSpaceReserved="false">
+        <Preference
+            android:key="clear_history"
+            android:title="Clear History"
+            android:summary="Delete all the visited locations."
+            app:iconSpaceReserved="false"/>
+        <SwitchPreference
+            android:key="history_visibility"
+            android:title="Hide/Show Visited Locations"
+            app:iconSpaceReserved="false"
+            android:defaultValue="true"/>
+        <Preference
+            android:key="history_statistics"
+            android:title="Statistics"
+            android:summary="Show statistics related to all the visited locations"
+            app:iconSpaceReserved="false"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

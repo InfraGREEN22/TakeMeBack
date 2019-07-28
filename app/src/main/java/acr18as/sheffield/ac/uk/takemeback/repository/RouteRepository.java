@@ -1,6 +1,7 @@
 package acr18as.sheffield.ac.uk.takemeback.repository;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,11 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
-import acr18as.sheffield.ac.uk.takemeback.roomdb.SavedLocation;
-import acr18as.sheffield.ac.uk.takemeback.view.SettingsFragment;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.preference.PreferenceManager;
 
 public class RouteRepository {
 
@@ -34,6 +34,7 @@ public class RouteRepository {
     private GeoApiContext mGeoApiContext = null;
     private Context context;
     private User user;
+    private SharedPreferences sharedPreferences;
 
     /**
      * Route Repository constructor
@@ -44,6 +45,7 @@ public class RouteRepository {
         this.mGeoApiContext = mGeoApiContext;
         this.context = context;
         this.user = ((UserClient)context.getApplicationContext()).getUser();
+        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     /**
@@ -68,7 +70,9 @@ public class RouteRepository {
 
         // at this point, we want the most optimal route, so we ask for NO alternative routes
         directions.alternatives(false);
-        if(SettingsFragment.DIRECTIONS_MODE == 0)
+
+        String value = sharedPreferences.getString("directions_mode", "0");
+        if(value.equals("0"))
             directions.mode(TravelMode.WALKING);
         else
             directions.mode(TravelMode.DRIVING);
@@ -87,7 +91,7 @@ public class RouteRepository {
                 Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
                 Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
                 //addPolylinesToMap(result);
-                directionsResult.postValue(result); // ВОЗМОЖНО, ОШИБКА ВОТ ТУТ
+                directionsResult.postValue(result);
             }
 
             @Override

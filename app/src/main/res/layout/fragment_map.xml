@@ -32,13 +32,14 @@
             android:backgroundTint="@color/colorPrimary"
             android:src="@drawable/ic_my_location_white_24dp" />
 
+        <!--
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_testing"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignStart="@+id/fab_current_position"
             android:layout_marginTop="90dp"
-            android:src="@drawable/ic_location_city_white_24dp"/>
+            android:src="@drawable/ic_location_city_white_24dp"/>-->
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_delete_destination"

@@ -45,6 +45,8 @@ public class BackgroundDetectedActivitiesService extends Service {
 
     }
 
+
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -131,6 +133,13 @@ public class BackgroundDetectedActivitiesService extends Service {
         });
     }
 
+
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        removeActivityUpdatesButtonHandler();
+        super.onTaskRemoved(rootIntent);
+    }
 
     @Override
     public void onDestroy() {

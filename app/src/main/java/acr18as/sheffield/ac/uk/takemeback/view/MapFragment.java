@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -27,6 +28,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.preference.PreferenceManager;
 
 import android.os.Looper;
 import android.util.Log;
@@ -67,7 +69,7 @@ import static android.content.Context.ACTIVITY_SERVICE;
  * Use the {@link MapFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MapFragment extends Fragment implements  OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -82,6 +84,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
 
     private Location mSavedLocation;
     private FusedLocationProviderClient mFusedLocationClient;
+
+    private SharedPreferences sharedPreferences;
 
     private MapView mMapView;
     //TODO: Make it private when finished with testing
@@ -140,6 +144,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         savedLocationViewModel = ViewModelProviders.of((this.getActivity())).get(SavedLocationViewModel.class);
         lastSavedLocation = null;
 
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+
         Log.d(TAG, "Fragment has been created.");
     }
 
@@ -154,7 +160,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
 
         //////////////////////////////////////////////////////////////////////////////////////////////
         // TODO: Delete this button after testing is done!!!
-
+        /*
         FloatingActionButton mTestingFloatingActionButton = rootView.findViewById(R.id.fab_testing);
         mTestingFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -163,7 +169,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                 Intent intent = new Intent(getActivity(), RouteActivity.class);
                 startActivity(intent);
             }
-        });
+        });*/
         //////////////////////////////////////////////////////////////////////////////////////////////
 
         // setting click event for a Save Location button
@@ -230,6 +236,17 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                 });
             }
         });
+
+        if(sharedPreferences.getBoolean("automode_switch", true))
+            hideSaveButton();
+        else
+            showSaveButton();
+
+        if(sharedPreferences.getBoolean("history_visibility", true))
+            showMarkers();
+        else
+            hideMarkers();
+
         return rootView;
     }
 
@@ -280,7 +297,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                         removeMarkers();
                     for(VisitedLocation loc : locations) {
                         MarkerOptions markerOptions = new MarkerOptions();
-                        markerOptions.title(loc.getTimestamp());
+                        markerOptions.title("You visited this location on " + loc.getTimestamp());
                         LatLng latLng = new LatLng(loc.getLat(), loc.getLon());
                         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                         markerOptions.position(latLng);
@@ -317,7 +334,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         });
     }
 
-
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
@@ -350,12 +366,16 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         catch (NullPointerException e) {
             Log.e(TAG, "Cannot detect the current location");
         }
-        if (SettingsFragment.AUTOMODE == 1) {
+
+        if(sharedPreferences.getBoolean("automode_switch", true))
             hideSaveButton();
-        }
-        else {
+        else
             showSaveButton();
-        }
+
+        if(sharedPreferences.getBoolean("history_visibility", true))
+            showMarkers();
+        else
+            hideMarkers();
     }
 
     @Override
@@ -436,10 +456,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
      */
     public void saveCurrentLocation() {
         try {
-            /*if (savedLocationMarker != null) {
-                savedLocationMarker.remove();
-            }*/
-            //user.getVisitedLocation().setDestinationPoint(user.getUserLocation());
             userViewModel.getUserLocation().observe(getActivity(), location -> {
 
                 userViewModel.setUserDestinationLocation(location);
@@ -453,20 +469,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                     Toast.makeText(getContext(), "Sorry, but the location cannot be saved...", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
-
-                /*
-                userViewModel.getUserDestinationLocation().observe(this, destination -> {
-                    mSavedLocation = new Location(destination);
-                    LatLng latLng = new LatLng(mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
-                    MarkerOptions markerOptions = new MarkerOptions();
-                    markerOptions.position(latLng);
-                    markerOptions.title("Your Destination Point");
-                    //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-                    savedLocationMarker = googleMap.addMarker(markerOptions);
-                    Toast.makeText(getContext(), "Your current location has been saved at Lat: " + mSavedLocation.getLatitude()
-                            + " Long: " + mSavedLocation.getLongitude(), Toast.LENGTH_SHORT).show();
-                });*/
-
             });
 
         }
@@ -596,6 +598,22 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         }
     }
 
+    private void hideMarkers() {
+        if(!visitedMarkers.isEmpty()) {
+            for (Marker m : visitedMarkers) {
+                m.setVisible(false);
+            }
+        }
+    }
+
+    private void showMarkers() {
+        if(!visitedMarkers.isEmpty()) {
+            for (Marker m : visitedMarkers) {
+                m.setVisible(true);
+            }
+        }
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // FOR TESTING PURPOSES ONLY!!!!
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -617,7 +635,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
             });
 
         });
-
     }
 
 

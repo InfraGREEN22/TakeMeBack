@@ -15,11 +15,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -60,6 +62,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     private VisitedLocationViewModel visitedLocationViewModel;
     private SavedLocationViewModel savedLocationViewModel;
     private SimpleDateFormat simpleDateFormat;
+    private SharedPreferences sharedPreferences;
 
     private Button cancelButton;
     private Button navigateButton;
@@ -96,6 +99,8 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         cancelButton = findViewById(R.id.route_cancel_button);
         navigateButton = findViewById(R.id.route_navigate_button);
 
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,6 +119,8 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     @Override
     public void onMapReady(GoogleMap mMap) {
         googleMap = mMap;
+
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -254,10 +261,15 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
                         insertSavedLocation(endMarker.getPosition().latitude, endMarker.getPosition().longitude);
 
                         Uri gmmIntentUri = null;
-                        if(SettingsFragment.DIRECTIONS_MODE == 0)
+
+                        String value = sharedPreferences.getString("directions_mode", "0");
+                        if(value.equals("0"))
                             gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=w");
+
                         else
                             gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=d");
+
+                        Log.d(TAG, "Building a route in " + value + " mode");
 
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                         mapIntent.setPackage("com.google.android.apps.maps");

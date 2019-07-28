@@ -1,8 +1,8 @@
 package acr18as.sheffield.ac.uk.takemeback.adapters;
 
 import acr18as.sheffield.ac.uk.takemeback.view.AboutFragment;
+import acr18as.sheffield.ac.uk.takemeback.view.AdvSettingsFragment;
 import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
-import acr18as.sheffield.ac.uk.takemeback.view.SettingsFragment;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -29,7 +29,7 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
             case 0:
                 return MapFragment.newInstance();
             case 1:
-                return SettingsFragment.newInstance();
+                return AdvSettingsFragment.newInstance();
             case 2:
                 return AboutFragment.newInstance();
         }

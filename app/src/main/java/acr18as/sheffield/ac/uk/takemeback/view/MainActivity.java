@@ -20,7 +20,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
 public class MainActivity extends AppCompatActivity implements MapFragment.OnFragmentInteractionListener,
-        SettingsFragment.OnFragmentInteractionListener,
+        AdvSettingsFragment.OnFragmentInteractionListener,
         AboutFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "MainActivity";
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                 int tabIconColor = ContextCompat.getColor(getApplicationContext(), R.color.White);
                 tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
 
-                // refreshing the MapFragment to apply changes made in SettingsFragment
+                // refreshing the MapFragment to apply changes made in AdvSettingsFragment
                 if(tab.getPosition() == 0) {
                     MapFragment.getFragment().onResume();
                 }
@@ -82,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         User user = new User();
         ((UserClient)getApplicationContext()).setUser(user);
         this.user = user;
+
+
 
         broadcastReceiver = new ARBroadcastReceiver();
         broadcastReceiver.setMainActivity(this);
@@ -105,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     protected void onPause() {
         super.onPause();
     }
+
 
     @Override
     protected void onDestroy() {
