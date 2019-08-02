@@ -26,4 +26,13 @@ public interface VisitedLocationDAO {
 
     @Query("DELETE FROM visited_location_table")
     void deleteAllLocations();
+
+    @Query("SELECT * FROM visited_location_table WHERE type = :type")
+    LiveData<List<VisitedLocation>> getLocationsByType(String type);
+
+    @Query("SELECT COUNT(*) FROM visited_location_table WHERE type = :type")
+    LiveData<Integer> getLocationsTypeCount(String type);
+
+    @Query("SELECT COUNT(*) FROM visited_location_table")
+    LiveData<Integer> getLocationsCount();
 }

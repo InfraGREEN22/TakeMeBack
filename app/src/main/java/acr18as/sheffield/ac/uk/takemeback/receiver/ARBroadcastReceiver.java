@@ -3,20 +3,18 @@ package acr18as.sheffield.ac.uk.takemeback.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.os.VibrationEffect;
+import android.location.Location;
 import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.location.DetectedActivity;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import acr18as.sheffield.ac.uk.takemeback.Constants;
+import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
+import acr18as.sheffield.ac.uk.takemeback.places.GetPlacesAsyncTask;
 import acr18as.sheffield.ac.uk.takemeback.roomdb.SavedLocation;
 import acr18as.sheffield.ac.uk.takemeback.view.MainActivity;
 import acr18as.sheffield.ac.uk.takemeback.view.MapFragment;
@@ -37,6 +35,7 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
     private Vibrator v;
     private SavedLocationViewModel savedLocationViewModel;
     private UserViewModel userViewModel;
+    private String placeType = null;
 
     private Context getCtx() {
         return ctx;
@@ -63,7 +62,6 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
         savedLocationViewModel = ViewModelProviders.of((mainActivity)).get(SavedLocationViewModel.class);
 
         v = (Vibrator) mainActivity.getSystemService(Context.VIBRATOR_SERVICE);
-        //STATE = "UNDETECTED";
         fragment = MapFragment.getFragment();
     }
 
@@ -72,11 +70,6 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
 
         if(confidence > Constants.CONFIDENCE) {
             switch (type) {
-                /*
-                case DetectedActivity.IN_VEHICLE: {
-                    label = "IN VEHICLE";
-                    break;
-                }*/
                 case DetectedActivity.IN_VEHICLE: {
                     label = "IN VEHICLE";
                     if (user.getUserLocation() != null) {
@@ -96,21 +89,6 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
                     }
                     break;
                 }
-                /*
-                    case DetectedActivity.ON_FOOT: {
-                    if (STATE.equals("DETECTED")) {
-                        if (isSaved)
-                            break;
-                        else {
-                            saveCurrentLocation();
-                            isSaved = true;
-                        }
-                        //STATE = "DETECTED";
-                    }
-                    label = "STILL";
-                    break;
-                }
-                 */
             }
         }
 
@@ -120,13 +98,6 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
 
         if (confidence > Constants.CONFIDENCE && label != null) {
             Toast.makeText(mainActivity.getApplicationContext(), "Activity: " + label, Toast.LENGTH_SHORT).show();
-            // Vibrate for 500 milliseconds
-            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-            } else {
-                //deprecated in API 26
-                v.vibrate(500);
-            }*/
         }
     }
 
@@ -135,7 +106,9 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
             userViewModel.getUserLocation().observe(mainActivity, location -> {
 
                 userViewModel.setUserDestinationLocation(location);
-                SavedLocation savedLocation = new SavedLocation(location.getLatitude(), location.getLongitude());
+
+                getNearbyPlaces(location);
+                SavedLocation savedLocation = new SavedLocation(location.getLatitude(), location.getLongitude(), placeType);
                 try {
                     savedLocationViewModel.insert(savedLocation);
                     Toast.makeText(mainActivity, "Your current location has been saved at Lat: " + savedLocation.getLat()
@@ -154,4 +127,26 @@ public class ARBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    private void getNearbyPlaces(Location location) {
+        String[] types = {"bus_station", "train_station", "parking"};
+        try {
+            for (String type : types) {
+                GetPlacesAsyncTask getPlacesTask = new GetPlacesAsyncTask();
+                String url = mainActivity.getResources().getString(R.string.nearestplacessearch) +
+                        "location=" + location.getLatitude() + "," + location.getLongitude() + "&radius=10&type=" + type +
+                        "&key=" + mainActivity.getResources().getString(R.string.google_maps_key);
+                String[] stringArray = new String[]{url};
+                getPlacesTask.execute(stringArray);
+                if (getPlacesTask.isFound()) {
+                    placeType = getPlacesTask.getPlaceType();
+                    return;
+                }
+            }
+            placeType = "street";
+        }
+        catch (Exception e) {
+            Log.e(TAG, "Error in getting nearby places: " + e.toString());
+        }
+    }
 }

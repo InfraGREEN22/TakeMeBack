@@ -215,6 +215,7 @@ public class AdvSettingsFragment extends Fragment {
 
             Preference clearHistoryPreference = (Preference) findPreference("clear_history");
             Preference switchPreference = (Preference) findPreference("automode_switch");
+            Preference statisticsPreference = (Preference) findPreference("history_statistics");
 
             clearHistoryPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
@@ -240,6 +241,15 @@ public class AdvSettingsFragment extends Fragment {
                             });
                     final AlertDialog alert = builder.create();
                     alert.show();
+                    return true;
+                }
+            });
+
+            statisticsPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(getActivity(), StatisticsActivity.class);
+                    startActivity(intent);
                     return true;
                 }
             });

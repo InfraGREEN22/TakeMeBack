@@ -40,10 +40,15 @@ public class VisitedLocationRepository {
         new DeleteAllLocationsAsyncTask(mLocationsDAO).execute();
     }
 
-
     public LiveData<List<VisitedLocation>> getAllLocations() {
         return mAllLocations;
     }
+
+    public LiveData<List<VisitedLocation>> getLocationsByType(String type) { return mLocationsDAO.getLocationsByType(type);}
+
+    public LiveData<Integer> getLocationsTypeCount(String type) {return mLocationsDAO.getLocationsTypeCount(type);}
+
+    public LiveData<Integer> getLocationsCount() { return mLocationsDAO.getLocationsCount(); }
 
 
     //-------------- ASYNC TASKS ------------------------//

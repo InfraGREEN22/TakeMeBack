@@ -88,7 +88,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
             mGeoApiContext = new GeoApiContext.Builder().apiKey(getString(R.string.google_maps_key)).build();
         }
 
-        simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh-mm-ss");
+        simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         //ViewModel
         RouteViewModelFactory factory = new RouteViewModelFactory(this.getApplication(), mGeoApiContext, this);
@@ -155,7 +155,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
                     //endLocation.setTime(new Date().getTime());
 
                     routeViewModel.calculateDirections(endLocation).observe(getActivity(), directionsResult -> {
-
+                        //directionsResult.routes[0].legs[0].distance.inMeters;
                         routeViewModel.getResultingPath(directionsResult).observe(getActivity(), result -> {
 
                             Polyline polyline = googleMap.addPolyline(new PolylineOptions().addAll(result));
@@ -255,19 +255,22 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
                 .setCancelable(true)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                        String latitude = String.valueOf(endMarker.getPosition().latitude);
-                        String longitude = String.valueOf(endMarker.getPosition().longitude);
 
-                        insertSavedLocation(endMarker.getPosition().latitude, endMarker.getPosition().longitude);
+                        double lat = savedLocationViewModel.getLastSavedLocation().getValue().getLat();
+                        double lon = savedLocationViewModel.getLastSavedLocation().getValue().getLon();
+                        String type = savedLocationViewModel.getLastSavedLocation().getValue().getType();
+                        //String latitude = String.valueOf(endMarker.getPosition().latitude);
+                        //String longitude = String.valueOf(endMarker.getPosition().longitude);
+
+                        insertSavedLocation(lat, lon, type);
 
                         Uri gmmIntentUri = null;
 
                         String value = sharedPreferences.getString("directions_mode", "0");
                         if(value.equals("0"))
-                            gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=w");
-
+                            gmmIntentUri = Uri.parse("google.navigation:q=" + lat + "," + lon + "&mode=w");
                         else
-                            gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=d");
+                            gmmIntentUri = Uri.parse("google.navigation:q=" + lat + "," + lon + "&mode=d");
 
                         Log.d(TAG, "Building a route in " + value + " mode");
 
@@ -297,12 +300,14 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         alert.show();
     }
 
-    private void insertSavedLocation(double latitude, double longitude) {
+    private void insertSavedLocation(double latitude, double longitude, String type) {
         //LatLng latLng = new LatLng(latitude, longitude);
         String timestamp = simpleDateFormat.format(new Date());
 
-        VisitedLocation location = new VisitedLocation(latitude, longitude, timestamp);
+        VisitedLocation location = new VisitedLocation(latitude, longitude, timestamp, type);
         visitedLocationViewModel.insert(location);
+        Log.d(TAG, "Inserted a saved location into VisitedLocation DB with latitude:" + latitude + ", longitude:" + longitude +
+        ", time: " + timestamp + ", type: " + type);
     }
 
     /////////////////////////////////////////////////////////////

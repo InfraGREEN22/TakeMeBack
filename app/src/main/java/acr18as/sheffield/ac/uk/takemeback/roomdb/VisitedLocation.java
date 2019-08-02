@@ -23,10 +23,14 @@ public class VisitedLocation implements Serializable {
     @ColumnInfo(name = "timestamp")
     private String timestamp;
 
-    public VisitedLocation(double lat, double lon, String timestamp) {
+    @ColumnInfo(name = "type")
+    private String type;
+
+    public VisitedLocation(double lat, double lon, String timestamp, String type) {
         this.lat = lat;
         this.lon = lon;
         this.timestamp = timestamp;
+        this.type = type;
     }
 
     public int getId() {
@@ -59,5 +63,13 @@ public class VisitedLocation implements Serializable {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

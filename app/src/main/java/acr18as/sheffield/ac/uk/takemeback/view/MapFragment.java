@@ -15,6 +15,7 @@ import android.os.Bundle;
 import acr18as.sheffield.ac.uk.takemeback.R;
 import acr18as.sheffield.ac.uk.takemeback.UserClient;
 import acr18as.sheffield.ac.uk.takemeback.model.User;
+import acr18as.sheffield.ac.uk.takemeback.places.GetPlacesAsyncTask;
 import acr18as.sheffield.ac.uk.takemeback.receiver.ARBroadcastReceiver;
 import acr18as.sheffield.ac.uk.takemeback.roomdb.SavedLocation;
 import acr18as.sheffield.ac.uk.takemeback.roomdb.VisitedLocation;
@@ -98,6 +99,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private String placeType = null;
 
     //UserViewModel
     private UserViewModel userViewModel;
@@ -157,20 +159,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
         Log.d(TAG, "View has been created.");
         initGoogleMap(savedInstanceState, rootView);
-
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        // TODO: Delete this button after testing is done!!!
-        /*
-        FloatingActionButton mTestingFloatingActionButton = rootView.findViewById(R.id.fab_testing);
-        mTestingFloatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setTestDestinationPoint();
-                Intent intent = new Intent(getActivity(), RouteActivity.class);
-                startActivity(intent);
-            }
-        });*/
-        //////////////////////////////////////////////////////////////////////////////////////////////
 
         // setting click event for a Save Location button
         mSaveButton = rootView.findViewById(R.id.save_location_button);
@@ -459,7 +447,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             userViewModel.getUserLocation().observe(getActivity(), location -> {
 
                 userViewModel.setUserDestinationLocation(location);
-                SavedLocation savedLocation = new SavedLocation(location.getLatitude(), location.getLongitude());
+
+                //---- Looking for nearby places of different types ----//
+
+                getNearbyPlaces(location);
+
+                SavedLocation savedLocation = new SavedLocation(location.getLatitude(), location.getLongitude(), placeType);
                 try {
                     savedLocationViewModel.insert(savedLocation);
                     Toast.makeText(getContext(), "Your current location has been saved at Lat: " + savedLocation.getLat()
@@ -614,28 +607,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // FOR TESTING PURPOSES ONLY!!!!
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Sets the destination point opposite to Regent Court in Sheffield
-     */
-    private void setTestDestinationPoint() {
-        // to prevent NullPointerException initially set the destination location as a user's current location
-        userViewModel.getUserLocation().observe(this, location -> {
-            userViewModel.setUserDestinationLocation(location);
-            userViewModel.getUserDestinationLocation().observe(this, destination -> {
-                Location mSavedLocation = new Location(destination);
-                //setting a point in front of the Regent Court
-                mSavedLocation.setLatitude(53.380884); mSavedLocation.setLongitude(-1.480858);
-                //user.getVisitedLocation().setDestinationPoint(mSavedLocation);
-                userViewModel.setUserDestinationLocation(mSavedLocation);
-                Log.d(TAG, "setTestDestinationPoint: the mock destination has been set to 53.380884, -1.480858.");
-            });
-
-        });
+    private void getNearbyPlaces(Location location) {
+        String[] types = {"bus_station", "train_station", "parking"};
+        try {
+            for (String type : types) {
+                GetPlacesAsyncTask getPlacesTask = new GetPlacesAsyncTask();
+                String url = getResources().getString(R.string.nearestplacessearch) +
+                        "location=" + location.getLatitude() + "," + location.getLongitude() + "&radius=10&type=" + type +
+                        "&key=" + getResources().getString(R.string.google_maps_key);
+                String[] stringArray = new String[]{url};
+                getPlacesTask.execute(stringArray);
+                if (getPlacesTask.isFound()) {
+                    placeType = getPlacesTask.getPlaceType();
+                    return;
+                }
+            }
+            placeType = "street";
+        }
+        catch (Exception e) {
+            Log.e(TAG, "Error in getting nearby places: " + e.toString());
+        }
     }
-
-
 }

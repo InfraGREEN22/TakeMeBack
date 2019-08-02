@@ -6,7 +6,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = SavedLocation.class, version = 1, exportSchema = false)
+@Database(entities = SavedLocation.class, version = 2, exportSchema = false)
 public abstract class SavedLocationRoomDatabase extends RoomDatabase {
     private static SavedLocationRoomDatabase instance;
 

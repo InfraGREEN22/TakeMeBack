@@ -17,9 +17,13 @@ public class SavedLocation implements Serializable {
     @ColumnInfo(name = "longitude")
     private double lon;
 
-    public SavedLocation(double lat, double lon) {
+    @ColumnInfo(name = "type")
+    private String type;
+
+    public SavedLocation(double lat, double lon, String type) {
         this.lat = lat;
         this.lon = lon;
+        this.type = type;
     }
 
     public int getId() {
@@ -44,5 +48,13 @@ public class SavedLocation implements Serializable {
 
     public void setLon(double lon) {
         this.lon = lon;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

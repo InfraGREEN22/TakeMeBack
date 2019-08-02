@@ -41,4 +41,9 @@ public class VisitedLocationViewModel extends AndroidViewModel {
 
     public void deleteAllLocations() {repository.deleteAllLocations();}
 
+    public LiveData<List<VisitedLocation>> getLocationsByType(String type) { return repository.getLocationsByType(type); }
+
+    public LiveData<Integer> getLocationsTypeCount(String type) { return repository.getLocationsTypeCount(type); }
+
+    public LiveData<Integer> getLocationsCount() { return repository.getLocationsCount(); }
 }

@@ -10,4 +10,5 @@
     <string name="developer">Developer: Aleksandr Sergeev</string>>
     <string name="supervisor">Supervisor: Prof. Fabio Ciravegna</string>
     <string name="mode_note">*Note: if the switch is off, the application will be working in manual mode and you have to manually save the location by clicking "SAVE CURRENT LOCATION" button in the Map Fragment.</string>
+    <string name="nearestplacessearch">https://maps.googleapis.com/maps/api/place/nearbysearch/json?</string>
 </resources>
