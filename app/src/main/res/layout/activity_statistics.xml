@@ -20,30 +20,43 @@
         android:orientation="vertical"
         android:layout_below="@+id/statistics_toolbar">
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="You have visited"/>
+            android:textAlignment="center" android:textSize="20sp"
+            android:text="Total locations visited:"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp" android:textColor="@color/Red"
             android:id="@+id/total_text" android:text=""/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Where there are:"/>
+            android:textAlignment="center" android:textSize="20sp"
+            android:text="Including"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp"
             android:text="Bus stops:"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp" android:textColor="@color/Red"
             android:id="@+id/bus_stops_text" android:text=""/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp"
             android:text="Train stations:"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp" android:textColor="@color/Red"
             android:id="@+id/train_stations_text" android:text=""/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp"
             android:text="Parking:"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp" android:textColor="@color/Red"
             android:id="@+id/parking_text" android:text=""/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp"
             android:text="Street parking:"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp" android:textColor="@color/Red"
             android:id="@+id/street_text" android:text=""/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp"
             android:text="Unspecified:"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="center" android:textSize="20sp" android:textColor="@color/Red"
             android:id="@+id/error_text" android:text=""/>
 
     </LinearLayout>
