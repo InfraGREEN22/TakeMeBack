@@ -259,8 +259,6 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
                         double lat = savedLocationViewModel.getLastSavedLocation().getValue().getLat();
                         double lon = savedLocationViewModel.getLastSavedLocation().getValue().getLon();
                         String type = savedLocationViewModel.getLastSavedLocation().getValue().getType();
-                        //String latitude = String.valueOf(endMarker.getPosition().latitude);
-                        //String longitude = String.valueOf(endMarker.getPosition().longitude);
 
                         insertSavedLocation(lat, lon, type);
 
